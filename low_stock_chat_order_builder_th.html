@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>สั่งสินค้าเหลือน้อย — ตัวสร้างข้อความแชท (Single HTML)</title>
+<style>
+  :root{
+    --bg:#0b1220;/* dark header */
+    --paper:#ffffff;
+    --ink:#0f172a;
+    --muted:#6b7280;
+    --accent:#2563eb;
+    --accent-2:#1e40af;
+    --line:#e5e9f2;
+    --card:#f8fafc;
+    --good:#16a34a; --warn:#eab308; --bad:#dc2626;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;font:15px/1.5 ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial}
+  header{background:var(--bg);color:#fff;padding:18px 16px}
+  header .title{font-size:18px;font-weight:700}
+  header .subtitle{opacity:.85;font-size:13px}
+  .wrap{max-width:1100px;margin:0 auto;padding:16px}
+  .u-row{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+  .panel{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:14px;box-shadow:0 8px 24px rgba(18,41,76,.05)}
+  .panel h3{margin:0 0 8px 0;font-size:15px}
+  .hint{color:var(--muted);font-size:12px}
+  input[type=file]{padding:8px;border:1px dashed var(--line);border-radius:10px;background:#fff}
+  .opts label{display:inline-flex;gap:6px;align-items:center;margin:6px 12px 6px 0}
+  select, input[type=text], textarea{border:1px solid var(--line);border-radius:10px;padding:8px 10px;font-size:14px;width:100%;}
+  button{border:0;cursor:pointer;border-radius:10px;padding:10px 14px;background:var(--accent);color:#fff;font-weight:600}
+  button.ghost{background:#fff;color:var(--accent);border:1px solid var(--accent)}
+  button.flat{background:#eef2ff;color:var(--accent-2)}
+  button.small{padding:6px 10px;font-size:12px;border-radius:8px}
+  .grid{display:grid;gap:12px}
+  .cols-2{grid-template-columns:1fr 1fr}
+  @media (max-width:900px){.cols-2{grid-template-columns:1fr}}
+
+  .supplier{border:1px solid var(--line);background:var(--card);border-radius:14px;border-left:4px solid var(--accent)}
+  .supplier header{display:flex;justify-content:space-between;align-items:center;background:transparent;color:var(--ink);padding:12px 14px;border-bottom:1px dashed var(--line)}
+  .supplier header h4{margin:0;font-size:17px;font-weight:700}
+  .supplier .body{padding:10px 10px 12px}
+  .item{display:grid;grid-template-columns: 1fr minmax(160px, 220px) 120px;gap:8px;align-items:center;background:#fff;border:1px solid var(--line);border-radius:12px;padding:8px 10px;margin:8px 0}
+  .item .base{font-size:14px}
+  .badge{display:inline-flex;align-items:center;gap:6px;padding:2px 8px;border:1px solid var(--line);border-radius:999px;background:#fff;font-size:12px;color:#334155}
+  .mono{font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace}
+  .soft{color:#475569}
+  .right{justify-self:end}
+  .copy-area{white-space:pre-wrap;background:#fff;border:1px dashed var(--line);padding:10px;border-radius:10px;font-size:14px}
+  .toolbar{display:flex;gap:8px;flex-wrap:wrap}
+  .sticky-footer{position:sticky;bottom:0;background:#fffffff2;backdrop-filter: blur(6px);border-top:1px solid var(--line);padding:10px;display:flex;gap:8px;justify-content:flex-end}
+  .pill{padding:4px 8px;border-radius:999px;background:#f1f5f9;border:1px solid var(--line);font-size:12px}
+  .hidden{display:none}
+
+  /* Focus & severity cues */
+  #results.has-focus .item:not(.focused){opacity:.55; filter:saturate(0.85)}
+  .item.focused{border-color:var(--accent); box-shadow:0 0 0 2px rgba(37,99,235,.15); background:#f8fbff}
+  .sev-dot{display:inline-block;width:10px;height:10px;border-radius:999px;margin:0 8px 0 10px;background:var(--muted)}
+  .sev-dot.bad{background:var(--bad)}
+  .sev-dot.warn{background:var(--warn)}
+  .sev-dot.ok{background:var(--good)}
+  .preview-panel{margin-top:10px;border:1px solid var(--line);border-radius:12px;background:#f8fafc;padding:10px}
+  .preview-head{font-size:11px;color:#64748b;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;display:flex;align-items:center;gap:6px}
+  .preview-head::before{content:'';width:8px;height:8px;background:var(--accent);border-radius:999px;display:inline-block}
+  .preview-panel .copy-area{background:#f8fafc;border-style:dashed;color:#334155;font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:13px}
+</style>
+</head>
+<body>
+  <header>
+    <div class="wrap">
+      <div class="title">สั่งสินค้าเหลือน้อย — ตัวสร้างข้อความแชท</div>
+      <div class="subtitle">อัปโหลด CSV → ตรวจลิสต์ → แก้ไขจำนวน/หน่วย → คัดลอก/แชร์ข้อความส่งซัพพลายเออร์ ได้ในหน้าเดียว</div>
+    </div>
+  </header>
+
+  <div class="wrap grid cols-2">
+    <section class="panel">
+      <h3>1) อัปโหลดไฟล์ .csv</h3>
+      <div class="u-row">
+        <input id="file" type="file" accept=".csv" />
+        <button id="loadDemo" class="ghost small" title="ทดสอบด้วย CSV โครงสร้างเปล่า">สร้างโครง CSV ตัวอย่าง</button>
+      </div>
+      <div class="hint">คอลัมน์ที่ใช้: <span class="mono">Supplier, SKU, Name, In stock [JERGUN CRAFT], Low stock [JERGUN CRAFT], Optimal stock [JERGUN CRAFT]</span></div>
+    </section>
+
+    <section class="panel">
+      <h3>2) ตัวเลือกการแสดงผล</h3>
+      <div class="grid cols-2">
+        <label>เกณฑ์คัดเลือก
+          <select id="filterMode">
+            <option value="alert">เฉพาะรายการที่คงเหลือ ≤ จุดเตือน และต่ำกว่าเป้าหมาย (แนะนำ)</option>
+            <option value="all">แสดงทุกสินค้า</option>
+          </select>
+        </label>
+        <label>รายละเอียดท้ายบรรทัด (เฉพาะในหน้า แสดง ไม่รวมตอนคัดลอก/แชร์)
+          <select id="suffixMode">
+            <option value="stock">แสดง [ คงเหลือ … เป้าหมาย … ]</option>
+            <option value="none">ไม่แสดง</option>
+          </select>
+        </label>
+        <label>จัดเรียง
+          <select id="sortMode">
+            <option value="supplier">ตามซัพพลายเออร์ → ชื่อสินค้า</option>
+            <option value="name">ตามชื่อสินค้า (A→Z)</option>
+            <option value="sku">ตามรหัส SKU (น้อย→มาก)</option>
+          </select>
+        </label>
+        <label>ค้นหา (ชื่อ/รหัส)
+          <input id="search" type="text" placeholder="พิมพ์เพื่อกรองรายการในหน้า" />
+        </label>
+      </div>
+      <div class="opts">
+        <label><input id="showSKU" type="checkbox" checked/> ใส่ SKU ไว้หน้าชื่อสินค้า</label></div>
+    </section>
+  </div>
+
+  <div class="wrap" id="results"></div>
+
+  <div class="wrap sticky-footer hidden" id="footerBar">
+    <span class="pill" id="stats">0 รายการ</span>
+  </div>
+
+<script>
+// ===== Utilities =====
+const $ = sel => document.querySelector(sel);
+const el = (tag, cls, html) => { const n=document.createElement(tag); if(cls) n.className=cls; if(html!=null) n.innerHTML=html; return n; };
+const number = v => { const n = parseFloat(String(v).replace(/,/g, '').trim()); return isNaN(n)?0:n };
+const notEmpty = v => v!=null && String(v).trim()!=='';
+const supplierName = v => notEmpty(v) ? String(v).trim() : 'ไม่ระบุซัพพลายเออร์';
+
+// very small CSV parser that handles commas and quotes
+function parseCSV(text, delim) {
+  // auto detect delimiter: comma, semicolon, tab
+  const d = delim || (text.indexOf('\t')>-1? '\t' : (text.indexOf(';')>-1? ';' : ','));
+  const rows = [];
+  let i=0, field='', row=[], inQuotes=false; const s=text; const dl=d; 
+  while(i<=s.length){
+    const c = s[i];
+    if(inQuotes){
+      if(c==='"'){
+        if(s[i+1]==='"'){ field+='"'; i++; } else { inQuotes=false; }
+      } else { field += c; }
+    }else{
+      if(c==='"'){ inQuotes=true; }
+      else if(c===dl){ row.push(field); field=''; }
+      else if(c==='\n' || c==='\r' || i===s.length){
+        row.push(field); field=''; if(row.length>1 || (row.length===1 && row[0]!=='')) rows.push(row); row=[];
+        if(c==='\r' && s[i+1]==='\n') i++; // CRLF
+      } else { field += c; }
+    }
+    i++;
+  }
+  return rows;
+}
+
+function mapColumns(headers){
+  const H = headers.map(h=>h.trim());
+  const find = (...keys)=>{
+    for(const k of keys){ const idx = H.findIndex(h=>h.toLowerCase()===k.toLowerCase()); if(idx>-1) return idx; }
+    // fallback: includes
+    for(const k of keys){ const idx = H.findIndex(h=>h.toLowerCase().includes(k.toLowerCase())); if(idx>-1) return idx; }
+    return -1;
+  };
+  return {
+    supplier: find('Supplier','ซัพพลายเออร์'),
+    sku: find('SKU','รหัส'),
+    name: find('Name','ชื่อ'),
+    instock: find('In stock [JERGUN CRAFT]','In stock','คงเหลือ'),
+    low: find('Low stock [JERGUN CRAFT]','Low stock','จุดเตือน'),
+    optimal: find('Optimal stock [JERGUN CRAFT]','Optimal stock','เป้าหมาย')
+  };
+}
+
+function computeItems(rows, col){
+  const items = [];
+  for(let r=1; r<rows.length; r++){
+    const row = rows[r]; if(!row || row.length===0) continue;
+    const supplier = supplierName(row[col.supplier]);
+    const sku = (row[col.sku]||'').toString().trim();
+    const name = (row[col.name]||'').toString().trim();
+    const instock = number(row[col.instock]);
+    const low = number(row[col.low]);
+    const optimal = number(row[col.optimal]);
+    const reorder = Math.max(optimal - instock, 0);
+    items.push({supplier, sku, name, instock, low, optimal, reorder, selected:false, editQty:''});
+  }
+  return items;
+}
+
+function filterAndSort(items){
+  const mode = $('#filterMode').value;
+  const search = $('#search').value.trim().toLowerCase();
+    let out = items.filter(x=>{
+    const ok = (mode==='all') || (x.instock <= x.low && x.reorder>0);
+    const match = !search || (x.name.toLowerCase().includes(search) || (x.sku||'').toLowerCase().includes(search));
+    return ok && match;
+  });
+  const sort = $('#sortMode').value;
+  out.sort((a,b)=>{
+    if(sort==='name') return a.name.localeCompare(b.name,'th');
+    if(sort==='sku') return (a.sku||'').localeCompare(b.sku||'');
+    // default: supplier then name
+    const s = a.supplier.localeCompare(b.supplier,'th');
+    if(s!==0) return s; return a.name.localeCompare(b.name,'th');
+  });
+  return out;
+}
+
+function buildLine(it, opts={forCopy:false}){
+  const showSKU = $('#showSKU').checked;
+  const suffixMode = $('#suffixMode').value;
+  const qtyText = (it.editQty && it.editQty.trim()!==''? it.editQty.trim() : ('x ' + it.reorder));
+  const head = [ showSKU && it.sku ? it.sku : null, it.name ].filter(Boolean).join(' ');
+  const includeSuffix = !opts.forCopy && suffixMode==='stock';
+  const suffix = includeSuffix ? ` [ คงเหลือ ${it.instock} เป้าหมาย ${it.optimal} ]` : '';
+  return `${head} ${qtyText}${suffix}`;
+}
+
+function groupBy(arr, key){
+  const m = new Map();
+  for(const x of arr){ if(!m.has(x[key])) m.set(x[key], []); m.get(x[key]).push(x); }
+  return m;
+}
+
+function setFocus(rowEl, on){
+  const results = document.getElementById('results');
+  if(on){ results.classList.add('has-focus'); rowEl.classList.add('focused'); }
+  else { rowEl.classList.remove('focused'); if(!results.querySelector('.item.focused')) results.classList.remove('has-focus'); }
+}
+
+function render(items){
+  const target = $('#results');
+  target.innerHTML = '';
+  const list = filterAndSort(items);
+  const bySup = groupBy(list, 'supplier');
+
+  for(const [supplier, rows] of bySup){
+    const card = el('div','supplier');
+    const head = el('header','');
+    head.appendChild(el('h4','', supplier));
+
+    const right = el('div','toolbar');
+    const btnCopy = el('button','small','คัดลอกข้อความ (ซัพพลายเออร์นี้)');
+    btnCopy.addEventListener('click',()=>{
+      const text = buildSupplierBlock(supplier, rows, {forCopy:true});
+      copyText(text);
+    });
+    right.appendChild(btnCopy);
+
+    const btnShare = el('button','small flat','แชร์ (ซัพพลายเออร์นี้)');
+    btnShare.title = 'ใช้ได้ในมือถือส่วนใหญ่ และ Chrome/Edge บางเวอร์ชันบนเดสก์ท็อป — ถ้าไม่รองรับจะคัดลอกแทน';
+    btnShare.addEventListener('click',()=>{
+      const text = buildSupplierBlock(supplier, rows, {forCopy:true});
+      shareText('ออเดอร์: '+supplier, text);
+    });
+    right.appendChild(btnShare);
+
+    const btnDL = el('button','small ghost','ดาวน์โหลด TXT');
+    btnDL.title = 'ดาวน์โหลดเฉพาะซัพพลายเออร์นี้';
+    btnDL.addEventListener('click',()=>{
+      const text = buildSupplierBlock(supplier, rows, {forCopy:true});
+      downloadSupplier(supplier, text);
+    });
+    right.appendChild(btnDL);
+
+
+    head.appendChild(right);
+    card.appendChild(head);
+
+    const body = el('div','body');
+
+    // preview block (secondary)
+    const previewWrap = el('div','preview-panel');
+    const previewHead = el('div','preview-head','ข้อความที่จะคัดลอก');
+    const previewText = el('div','copy-area');
+    const refreshPreview = ()=>{ previewText.textContent = buildSupplierBlock(supplier, rows, {forCopy:true}); updateFooter(items); };
+    previewWrap.append(previewHead, previewText);
+
+    rows.forEach((it)=>{
+      const row = el('div','item');
+
+      const base = el('div','base');
+      const top = el('div','');
+      const badge = el('span','badge mono', `${it.sku||'-'}`);
+      const nm = el('span','', ` ${it.name}`);
+      const sev = it.instock<=0 ? 'bad' : (it.instock<=it.low ? 'warn' : 'ok');
+      const dot = el('span', `sev-dot ${sev}`, '');
+      if(!$('#showSKU').checked) badge.classList.add('hidden');
+      top.appendChild(badge); top.appendChild(dot); top.appendChild(nm);
+      const info = el('div','soft', `คงเหลือ ${it.instock} • จุดเตือน ${it.low} • เป้าหมาย ${it.optimal}`);
+      base.appendChild(top); base.appendChild(info);
+
+      const qtyBox = el('div','');
+      const qtyInput = el('input'); qtyInput.type='text'; qtyInput.placeholder=`x ${it.reorder}`; qtyInput.value=it.editQty; 
+      qtyInput.addEventListener('input',()=>{ it.editQty = qtyInput.value; refreshPreview(); });
+      qtyInput.addEventListener('focus',()=> setFocus(row, true));
+      qtyInput.addEventListener('blur',()=> setFocus(row, false));
+      const quickBar = el('div','u-row');
+      const q1 = el('button','small flat','x 1ลัง'); q1.addEventListener('click',()=>{ it.editQty='x 1ลัง'; qtyInput.value=it.editQty; refreshPreview(); setFocus(row,true); });
+      const q2 = el('button','small flat','x 6'); q2.addEventListener('click',()=>{ it.editQty='x 6'; qtyInput.value=it.editQty; refreshPreview(); setFocus(row,true); });
+      const q3 = el('button','small flat','x 12'); q3.addEventListener('click',()=>{ it.editQty='x 12'; qtyInput.value=it.editQty; refreshPreview(); setFocus(row,true); });
+      quickBar.append(q1,q2,q3);
+      qtyBox.appendChild(qtyInput); qtyBox.appendChild(quickBar);
+
+      const actions = el('div','right');
+      const btnLine = el('button','small ghost','คัดลอกบรรทัดนี้');
+      btnLine.addEventListener('click',()=>{ copyText(buildLine(it, {forCopy:true})); });
+      actions.appendChild(btnLine);
+
+      row.append(base, qtyBox, actions);
+      body.appendChild(row);
+    });
+
+    refreshPreview();
+    body.appendChild(previewWrap);
+    card.appendChild(body);
+    target.appendChild(card);
+  }
+
+  document.getElementById('footerBar').classList.toggle('hidden', bySup.size===0);
+  updateFooter(items);
+}
+
+function buildSupplierBlock(supplier, rows, opts={forCopy:false}){
+  const lines=[String(supplier),''];
+  for(const it of rows){ lines.push(buildLine(it, opts)); }
+  return lines.join('\n'); // FIX: ensure newline is escaped correctly
+}
+
+async function copyText(text){
+  try{ await navigator.clipboard.writeText(text); toast('คัดลอกแล้ว ✓'); }
+  catch(e){
+    const ta = document.createElement('textarea'); ta.value=text; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove(); toast('คัดลอกแล้ว ✓');
+  }
+}
+
+async function shareText(title, text){
+  if (navigator.share) {
+    try { await navigator.share({title, text}); }
+    catch(e){ if(e?.name!=='AbortError') toast('แชร์ไม่สำเร็จ'); }
+  } else {
+    await copyText(text);
+    toast('อุปกรณ์ไม่รองรับการแชร์ — คัดลอกแทนให้แล้ว');
+  }
+}
+
+function updateFooter(items){
+  const list = filterAndSort(items);
+  document.getElementById('stats').textContent = `${list.length} รายการ`;
+}
+
+function sanitizeFilename(name){
+  return String(name||'').replace(/[\\/*?:"<>|]/g,'_');
+}
+
+function downloadSupplier(supplier, text){
+  const safe = sanitizeFilename(supplier);
+  const blob = new Blob([text], {type:'text/plain;charset=utf-8'});
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `ออเดอร์_${safe}.txt`; a.click(); URL.revokeObjectURL(a.href);
+}
+
+// ===== File handling =====
+document.getElementById('file').addEventListener('change', async (ev)=>{
+  const file = ev.target.files[0]; if(!file) return;
+  const text = await file.text();
+  const rows = parseCSV(text);
+  if(!rows.length){ alert('อ่าน CSV ไม่ได้'); return; }
+  const col = mapColumns(rows[0]);
+  const miss = Object.entries(col).filter(([k,v])=>v<0).map(([k])=>k);
+  if(miss.length){
+    alert('ไม่พบคอลัมน์ที่จำเป็น: '+miss.join(', ')+'\nกรุณาตรวจสอบชื่อหัวคอลัมน์ในไฟล์');
+    return;
+  }
+  window.__ITEMS__ = computeItems(rows,col);
+  render(window.__ITEMS__);
+});
+
+// Global control listeners (avoid duplicate bindings during render)
+['suffixMode','showSKU','sortMode'].forEach(id=>{
+  document.getElementById(id).addEventListener('change',()=>{
+    if(window.__ITEMS__) render(window.__ITEMS__);
+  });
+});
+document.getElementById('search').addEventListener('input', ()=>{ if(window.__ITEMS__) render(window.__ITEMS__); });
+
+// ===== Demo CSV for structure testing =====
+document.getElementById('loadDemo').addEventListener('click', ()=>{
+  const headers = ['Supplier','SKU','Name','In stock [JERGUN CRAFT]','Low stock [JERGUN CRAFT]','Optimal stock [JERGUN CRAFT]'];
+  const rows = [
+    ['บริษัท ดริ้งก์ไว๊ซ์ จำกัด','10864','set ซอดแจ้ง','4','6','6'],
+    ['บริษัท ดริ้งก์ไว๊ซ์ จำกัด','10757','จ๊วด โคล่า 360 ml','0','6','12'],
+    ['บริษัท ระยองพรีเมียมคราฟต์ สปิริตส์ จำกัด','10404','RAYONG CRAFT Spirits(น้ำตาลดอกมะพร้าว.สับปะรด.น้ำตาลโตนด)','3','5','5'],
+    ['ไม่ระบุ','','ตัวอย่าง ไม่มี SKU','0','1','4']
+  ];
+  const csvEscape = (v)=>{
+    const s = String(v);
+    if(/[",\n]/.test(s)) return '"'+s.replace(/"/g,'""')+'"';
+    return s;
+  };
+  const csv = [headers.join(','), ...rows.map(r=>r.map(csvEscape).join(','))].join('\n');
+  const blob = new Blob([csv],{type:'text/csv;charset=utf-8'});
+  const f = new File([blob],'demo.csv',{type:'text/csv'});
+  const dt = new DataTransfer(); dt.items.add(f); const input = document.getElementById('file'); input.files = dt.files; input.dispatchEvent(new Event('change'));
+});
+
+// ===== Self Tests (do not modify existing, append new if needed) =====
+(function runInitialTests(){
+  const results = [];
+  // Existing Test 1: buildSupplierBlock uses \n and no stock suffix when forCopy=true
+  const it = {supplier:'SUP', sku:'100', name:'ITEM', instock:1, optimal:2, low:1, reorder:1, editQty:'', selected:true};
+  const block = buildSupplierBlock('SUP', [it], {forCopy:true});
+  results.push(block.includes('\n') && !block.includes('คงเหลือ') ? 'PASS: copy block newline & no suffix' : 'FAIL: newline/suffix');
+
+  // Existing Test 2: parseCSV simple
+  const csv = 'Supplier,SKU,Name,In stock [JERGUN CRAFT],Low stock [JERGUN CRAFT],Optimal stock [JERGUN CRAFT]\nA,1,N,0,1,2';
+  const rows = parseCSV(csv);
+  const col = mapColumns(rows[0]);
+  const items = computeItems(rows,col);
+  results.push(items.length===1 && items[0].reorder===2 ? 'PASS: CSV parse & compute' : 'FAIL: CSV/compute');
+
+  // New Test 3: edited quantity respected in copy
+  const it2 = {supplier:'SUP', sku:'200', name:'ITEM2', instock:0, optimal:12, low:6, reorder:12, editQty:'x 1ลัง', selected:true};
+  const line = buildLine(it2,{forCopy:true});
+  results.push(line.includes('x 1ลัง') ? 'PASS: edited qty' : 'FAIL: edited qty');
+
+  // New Test 4: buildSupplierBlock includes all rows
+  const itA = {supplier:'S', sku:'1', name:'A', instock:0, optimal:2, low:1, reorder:2, editQty:'', selected:false};
+  const itB = {supplier:'S', sku:'2', name:'B', instock:0, optimal:2, low:1, reorder:2, editQty:'', selected:false};
+  const block2 = buildSupplierBlock('S',[itA,itB],{forCopy:true});
+  results.push(block2.includes('A') && block2.includes('B') ? 'PASS: supplier block has all items' : 'FAIL: supplier block items');
+
+  // New Test 5: parseCSV with quoted comma
+  const csv2 = 'Supplier,SKU,Name,In stock [JERGUN CRAFT],Low stock [JERGUN CRAFT],Optimal stock [JERGUN CRAFT]\nB,9,"RAYONG, Craft",0,1,3';
+  const rows2 = parseCSV(csv2);
+  const col2 = mapColumns(rows2[0]);
+  const items2 = computeItems(rows2,col2);
+  results.push(items2.length===1 && items2[0].name==='RAYONG, Craft' ? 'PASS: CSV quoted comma' : 'FAIL: CSV quoted comma');
+
+  // New Test 6: filename sanitize
+  results.push(sanitizeFilename('A/B:Test*Name').indexOf('/')===-1 ? 'PASS: filename sanitize' : 'FAIL: filename sanitize');
+
+  // New Test 7: ensure no CR in supplier block and correct newline join
+  results.push(!/\r/.test(block) && block.split('\n').length>=2 ? 'PASS: newline join & no CR' : 'FAIL: CR/newline join');
+
+  console.log('[Self Tests]', results);
+})();
+</script>
+</body>
+</html>
