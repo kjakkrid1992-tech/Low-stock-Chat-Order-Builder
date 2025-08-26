@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>สั่งสินค้าเหลือนน้อย — Dashboard โทนฟ้า-ขาว (มี Sidebar)</title>
+<title>สั่งสินค้าเหลือน้อย — Dashboard โทนฟ้า-ขาว (มี Sidebar)</title>
 <style>
   :root{
     --bg:#0b1220;            /* topbar dark blue */
@@ -27,18 +27,26 @@
   .topbar{position:sticky;top:0;z-index:50;background:var(--bg);color:#fff;border-bottom:1px solid rgba(255,255,255,.06)}
   .topbar .wrap{max-width:1200px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:12px}
   .brand{font-size:16px;font-weight:600;margin-right:auto}
-  .top-actions{display:flex;gap:8px;align-items:center}
-  .top-actions input[type="search"]{border:1px solid rgba(255,255,255,.2); background:rgba(255,255,255,.1); color:#fff; border-radius:999px; padding:8px 12px; min-width:220px}
-  .top-actions input::placeholder{color:#e2e8f0}
   .icon-btn{border:0;background:rgba(255,255,255,.08); color:#fff; border-radius:10px; padding:8px 10px; cursor:pointer}
   .icon-btn:hover{background:rgba(255,255,255,.14)}
 
   .layout{display:grid; grid-template-columns:260px 1fr; height:calc(100vh - 52px)} /* Fix height */
-  .sidebar{background:var(--bg-2); color:#e5e7eb; padding:14px 12px; border-right:1px solid rgba(255,255,255,.06); overflow-y: auto;} /* Add independent scroll */
-  .sidebar .logo{display:flex; align-items:center; gap:8px; font-weight:700; letter-spacing:.2px; margin:4px 10px 14px}
-  .sidebar .filter{margin:6px 10px 10px;font-size:12px;color:#e5e7eb;opacity:.95}
+  .sidebar{background:var(--bg-2); color:#e5e7eb; padding:14px 12px; border-right:1px solid rgba(255,255,255,.06); display: flex; flex-direction: column; min-height: 0;} /* HOTFIX */
+  .sidebar .logo{display:flex; align-items:center; gap:8px; font-weight:700; letter-spacing:.2px; margin:4px 10px 14px; flex-shrink: 0;}
+  .sidebar .sidebar-search { padding: 0 10px 10px; flex-shrink: 0;}
+  .sidebar .sidebar-search input {
+    width: 100%;
+    background: rgba(255,255,255,.08);
+    border: 1px solid rgba(255,255,255,.2);
+    color: #fff;
+    border-radius: 8px;
+    padding: 8px 10px;
+    font-size: 13px;
+  }
+  .sidebar .sidebar-search input::placeholder { color: #9ca3af; }
+  .sidebar .filter{margin:6px 10px 10px;font-size:12px;color:#e5e7eb;opacity:.95; flex-shrink: 0;}
   .sidebar .filter input{margin-right:6px}
-  .nav{display:flex; flex-direction:column; gap:4px; margin:8px}
+  .nav{display:flex; flex-direction:column; gap:2px; margin:8px; overflow-y: auto; flex-grow: 1; min-height: 0;}
   .nav a{display:flex; align-items:center; gap:10px; text-decoration:none; color:#e5e7eb; padding:10px 12px; border-radius:10px}
   .nav a:hover{background:rgba(255,255,255,.06)}
   .nav a.active{background:rgba(37,99,235,.22); color:#fff}
@@ -49,10 +57,26 @@
   .nav .count.lv2{background:rgba(234,179,8,.32);border-color:rgba(234,179,8,.55)}  /* 3–5 (dark yellow) */
   .nav .count.lv3{background:rgba(220,38,38,.35);border-color:rgba(220,38,38,.60)}  /* >=6 (red) */
 
-  .content{background:#fff; overflow-y: auto;}
+  .content{background:#fff; overflow-y: auto; min-height: 0;} /* HOTFIX */
   .container{max-width:1200px; margin:0 auto; padding:16px}
 
   footer{border-top:1px solid var(--line); padding:12px 16px; color:#64748b; background:#fff}
+
+  /* ===== Custom Scrollbar for Sidebar ===== */
+  .sidebar::-webkit-scrollbar, .nav::-webkit-scrollbar {
+    width: 8px;
+  }
+  .sidebar::-webkit-scrollbar-track, .nav::-webkit-scrollbar-track {
+    background: transparent; /* Make track invisible */
+  }
+  .sidebar::-webkit-scrollbar-thumb, .nav::-webkit-scrollbar-thumb {
+    background-color: #4a5568; /* A visible muted gray */
+    border-radius: 4px;
+  }
+  .sidebar::-webkit-scrollbar-thumb:hover, .nav::-webkit-scrollbar-thumb:hover {
+    background-color: #718096; /* Lighter gray on hover */
+  }
+
 
   /* ===== Generic Controls ===== */
   select,input[type=text],input[type=search],button{border:1px solid var(--line);border-radius:10px;padding:8px 10px;font-size:14px;background:#fff;color:var(--ink)}
@@ -103,10 +127,6 @@
     <div class="wrap">
       <button class="icon-btn" id="btnMenu" aria-label="Toggle sidebar">☰</button>
       <div class="brand">สั่งสินค้าเหลือน้อย — Dashboard</div>
-      <div class="top-actions">
-        <input type="search" id="globalSearch" placeholder="ค้นหาทั้งระบบ (ชื่อ/SKU/ซัพพลายเออร์)" />
-        <span class="tag">Marketing</span>
-      </div>
     </div>
   </header>
 
@@ -114,6 +134,9 @@
     <!-- ===== Sidebar ===== -->
     <aside class="sidebar" role="navigation" aria-label="รายชื่อซัพพลายเออร์">
       <div class="logo">📦 ซัพพลายเออร์</div>
+      <div class="sidebar-search">
+        <input type="search" id="supplierSearch" placeholder="ค้นหาซัพพลายเออร์..." />
+      </div>
       <div class="filter">
         <label><input type="checkbox" id="onlyUrgentSup"/> เฉพาะที่ต้องสั่ง (>0)</label>
       </div>
@@ -128,8 +151,17 @@
         <div class="panel bar" id="syncBar">
           <div class="status" id="syncText"><span class="dot"></span> พร้อมใช้งาน</div>
           <div class="bar" style="margin-left:auto">
+            <button id="toggleUpload" class="small ghost">อัปโหลดไฟล์...</button>
             <button id="btnResync" class="small">ซิงก์อีกครั้ง</button>
           </div>
+        </div>
+
+        <!-- File upload / demo (now hidden by default) -->
+        <div class="panel bar" id="uploadPanel" style="margin-top:12px; display: none;">
+          <strong>อัปโหลด CSV</strong>
+          <input id="file" type="file" accept=".csv" />
+          <button id="loadDemo" class="small ghost">CSV ตัวอย่าง</button>
+          <span class="hint">คอลัมน์: Supplier, SKU, Name, In stock, Low stock, Optimal stock</span>
         </div>
 
         <!-- Controls -->
@@ -141,14 +173,6 @@
           <button id="prevSup" class="small ghost">◀ ก่อนหน้า</button>
           <button id="nextSup" class="small ghost">ถัดไป ▶</button>
           <span class="pill" id="supMeta">-</span>
-        </div>
-
-        <!-- File upload / demo -->
-        <div class="panel bar" id="uploadPanel" style="margin-top:12px">
-          <strong>อัปโหลด CSV</strong>
-          <input id="file" type="file" accept=".csv" />
-          <button id="loadDemo" class="small ghost">CSV ตัวอย่าง</button>
-          <span class="hint">คอลัมน์: Supplier, SKU, Name, In stock, Low stock, Optimal stock</span>
         </div>
 
         <!-- Main view -->
@@ -302,17 +326,27 @@ function renderSidebarSuppliers(){
   if(!list) return;
   list.innerHTML='';
   const onlyUrg = localStorage.getItem(PREFS.ONLY_URG_SUP)==='1';
+  const q = ($('#supplierSearch').value || '').trim().toLowerCase();
 
-  // If onlyUrg is set and the current supplier has no urgent items, move to the first one that does.
+  const filteredOrder = state.order.filter(name => name.toLowerCase().includes(q));
+
   if(onlyUrg){
-    const idx = state.order.findIndex(n=> urgentCountSupplier(state.bySup.get(n)||[])>0);
-    if(idx>-1 && urgentCountSupplier(state.bySup.get(state.order[state.cur])||[])===0){ state.cur = idx; }
+    const currentSupplierName = state.order[state.cur];
+    const isCurrentVisible = filteredOrder.includes(currentSupplierName) && urgentCountSupplier(state.bySup.get(currentSupplierName) || []) > 0;
+    if(!isCurrentVisible) {
+        const firstVisibleIndex = state.order.findIndex(name => filteredOrder.includes(name) && urgentCountSupplier(state.bySup.get(name) || []) > 0);
+        if (firstVisibleIndex > -1) {
+            state.cur = firstVisibleIndex;
+        }
+    }
   }
 
-  state.order.forEach((name, idx)=>{
+  filteredOrder.forEach(name =>{
     const rows = state.bySup.get(name)||[];
     const cnt = urgentCountSupplier(rows);
-    if(onlyUrg && cnt===0) return; // Hide if count is 0 and filter is on
+    if(onlyUrg && cnt===0) return; 
+    
+    const idx = state.order.indexOf(name);
     const lvl = cnt>=6? 'lv3' : cnt>=3? 'lv2' : cnt>=1? 'lv1' : 'lv0';
     const a=document.createElement('a');
     a.href='#';
@@ -324,10 +358,26 @@ function renderSidebarSuppliers(){
   });
 }
 function updateSidebarActive(){
-  document.querySelectorAll('#supList a').forEach((a,i)=> a.classList.toggle('active', i===state.cur));
+  document.querySelectorAll('#supList a').forEach(a => {
+      const name = a.dataset.name;
+      const originalIndex = state.order.indexOf(name);
+      a.classList.toggle('active', originalIndex === state.cur);
+  });
 }
 
-function renderSupplier(){ const name=state.order[state.cur]; const rowsAll=state.bySup.get(name)||[]; const onlyAlert=$('#onlyAlert').checked; const q=($('#itemSearch').value||'').trim().toLowerCase();
+function renderSupplier(){ 
+  if (state.order.length === 0 || state.cur >= state.order.length) {
+      $('#view').innerHTML = '<div class="panel">ไม่พบข้อมูลซัพพลายเออร์</div>';
+      // Clear footer stats as well
+      $('#stats').textContent = '-';
+      $('#supMeta').textContent = '0/0';
+      return;
+  }
+  const name=state.order[state.cur]; 
+  const rowsAll=state.bySup.get(name)||[]; 
+  const onlyAlert=$('#onlyAlert').checked; 
+  const q=($('#itemSearch').value||'').trim().toLowerCase();
+  
   let rows=rowsAll.filter(it=> !onlyAlert || (it.instock<=it.low && it.reorder>0));
   if(q) rows=rows.filter(it=> it.name.toLowerCase().includes(q) || (it.sku||'').toLowerCase().includes(q));
 
@@ -407,6 +457,14 @@ async function syncRemote({manual=false}={}){ const ctl=new AbortController(); c
 $('#itemSearch').addEventListener('input', ()=> renderSupplier());
 $('#onlyAlert').addEventListener('change', ()=> renderSupplier());
 $('#btnResync').addEventListener('click', ()=> syncRemote({manual:true}));
+$('#supplierSearch').addEventListener('input', () => {
+    renderSidebarSuppliers();
+    renderSupplier();
+});
+$('#toggleUpload').addEventListener('click', () => {
+    const panel = $('#uploadPanel');
+    panel.style.display = panel.style.display === 'none' ? 'flex' : 'none';
+});
 $('#copyUrgentAll').addEventListener('click', ()=>{
   const by = groupBySupplier(state.items.filter(it=> it.instock<=it.low && it.reorder>0));
   const blocks = [];
@@ -420,32 +478,6 @@ $('#loadDemo').addEventListener('click', ()=>{ const headers=['Supplier','SKU','
 
 // Topbar controls
 $('#btnMenu').addEventListener('click', ()=> document.body.classList.toggle('show-sidebar'));
-$('#globalSearch').addEventListener('input', (e)=>{
-  const q=(e.target.value||'').trim().toLowerCase();
-  if(!q){ renderSupplier(); return; }
-  const name=state.order[state.cur]; const rowsAll=state.bySup.get(name)||[];
-  const onlyAlert=$('#onlyAlert').checked;
-  let rows=rowsAll.filter(it=> !onlyAlert || (it.instock<=it.low && it.reorder>0));
-  rows=rows.filter(it=> it.name.toLowerCase().includes(q) || (it.sku||'').toLowerCase().includes(q) || (it.supplier||'').toLowerCase().includes(q));
-  const view=$('#view'); view.innerHTML='';
-  const card=el('div','card');
-  const head=el('header','');
-  head.appendChild(el('div','',`<h2>Global Search: <span class="pill">${q}</span></h2>`));
-  card.appendChild(head);
-  const list=el('div','items');
-  rows.forEach(it=>{
-    const row=el('div','item');
-    const nameBox=el('div','name');
-    const sev=el('i',`sev ${it.instock<=0?'bad':(it.instock<=it.low?'warn':'ok')}`,'');
-    const sku=el('span','badge', it.sku||'-');
-    const nm=el('span','',`[${it.supplier}] ${it.name}`);
-    nameBox.append(sev, sku, nm);
-    const qtyBox=el('div','',`<span class="pill">Stock ${it.instock}</span>`);
-    const actions=el('div',''); const btnLine=el('button','small ghost','Copy'); btnLine.onclick=()=> copyText(buildLine(it,true)); actions.appendChild(btnLine);
-    row.append(nameBox, qtyBox, actions); list.appendChild(row);
-  });
-  card.appendChild(list); view.appendChild(card);
-});
 
 // ===== Boot =====
 loadFromCache();
@@ -456,6 +488,7 @@ const cbUrg = document.getElementById('onlyUrgentSup');if(cbUrg){
   cbUrg.addEventListener('change', ()=>{
     localStorage.setItem(PREFS.ONLY_URG_SUP, cbUrg.checked?'1':'0');
     renderSidebarSuppliers();
+    renderSupplier(); // Re-render main content to reflect potential change in `state.cur`
   });
 }
 </script>
