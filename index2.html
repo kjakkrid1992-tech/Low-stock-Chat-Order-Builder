@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>สั่งสินค้าเหลือนน้อย — Dashboard โทนฟ้า-ขาว (มี Sidebar)</title>
+<style>
+  :root{
+    --bg:#0b1220;            /* topbar dark blue */
+    --bg-2:#0e1a33;          /* sidebar dark blue */
+    --ink:#0f172a;           /* text */
+    --muted:#64748b;         /* secondary text */
+    --line:#e5e9f2;          /* borders */
+    --accent:#2563eb;        /* blue accent */
+    --good:#16a34a;          /* green */
+    --warn:#eab308;          /* amber */
+    --bad:#dc2626;           /* red */
+    --paper:#ffffff;         /* surface */
+    --card:#f8fafc;          /* card */
+    --hover:#eff6ff;         /* light blue hover */
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%;margin:0; overflow: hidden;} /* Prevent main page scroll */
+  body{font:14px/1.5 ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial; color:var(--ink); background:#fff;}
+
+  /* ===== Layout ===== */
+  .topbar{position:sticky;top:0;z-index:50;background:var(--bg);color:#fff;border-bottom:1px solid rgba(255,255,255,.06)}
+  .topbar .wrap{max-width:1200px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:12px}
+  .brand{font-size:16px;font-weight:600;margin-right:auto}
+  .top-actions{display:flex;gap:8px;align-items:center}
+  .top-actions input[type="search"]{border:1px solid rgba(255,255,255,.2); background:rgba(255,255,255,.1); color:#fff; border-radius:999px; padding:8px 12px; min-width:220px}
+  .top-actions input::placeholder{color:#e2e8f0}
+  .icon-btn{border:0;background:rgba(255,255,255,.08); color:#fff; border-radius:10px; padding:8px 10px; cursor:pointer}
+  .icon-btn:hover{background:rgba(255,255,255,.14)}
+
+  .layout{display:grid; grid-template-columns:260px 1fr; height:calc(100vh - 52px)} /* Fix height */
+  .sidebar{background:var(--bg-2); color:#e5e7eb; padding:14px 12px; border-right:1px solid rgba(255,255,255,.06); overflow-y: auto;} /* Add independent scroll */
+  .sidebar .logo{display:flex; align-items:center; gap:8px; font-weight:700; letter-spacing:.2px; margin:4px 10px 14px}
+  .sidebar .filter{margin:6px 10px 10px;font-size:12px;color:#e5e7eb;opacity:.95}
+  .sidebar .filter input{margin-right:6px}
+  .nav{display:flex; flex-direction:column; gap:4px; margin:8px}
+  .nav a{display:flex; align-items:center; gap:10px; text-decoration:none; color:#e5e7eb; padding:10px 12px; border-radius:10px}
+  .nav a:hover{background:rgba(255,255,255,.06)}
+  .nav a.active{background:rgba(37,99,235,.22); color:#fff}
+  
+  .nav .count{margin-left:auto;font-size:12px;padding:2px 8px;border-radius:999px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);color:#e2e8f0}
+  .nav .count.lv0{background:rgba(22,163,74,.18);border-color:rgba(22,163,74,.35)}  /* 0 items (light green) */
+  .nav .count.lv1{background:rgba(234,179,8,.20);border-color:rgba(234,179,8,.40)}  /* 1–2 (light yellow) */
+  .nav .count.lv2{background:rgba(234,179,8,.32);border-color:rgba(234,179,8,.55)}  /* 3–5 (dark yellow) */
+  .nav .count.lv3{background:rgba(220,38,38,.35);border-color:rgba(220,38,38,.60)}  /* >=6 (red) */
+
+  .content{background:#fff; overflow-y: auto;}
+  .container{max-width:1200px; margin:0 auto; padding:16px}
+
+  footer{border-top:1px solid var(--line); padding:12px 16px; color:#64748b; background:#fff}
+
+  /* ===== Generic Controls ===== */
+  select,input[type=text],input[type=search],button{border:1px solid var(--line);border-radius:10px;padding:8px 10px;font-size:14px;background:#fff;color:var(--ink)}
+  button{cursor:pointer;background:var(--accent);color:#fff;border:0}
+  button.ghost{background:#fff;color:var(--accent);border:1px solid var(--accent)}
+  button.flat{background:#eef2ff;color:#1e40af}
+  button.small{padding:6px 10px;font-size:12px;border-radius:8px}
+  .pill{padding:4px 8px;border-radius:999px;background:#f1f5f9;border:1px solid var(--line);font-size:12px}
+  .panel{border:1px solid var(--line);border-radius:12px;background:var(--card);padding:10px}
+  .bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+
+  .status{display:flex;align-items:center;gap:8px}
+  .dot{width:10px;height:10px;border-radius:999px;background:#94a3b8;display:inline-block}
+  .dot.ok{background:var(--good)} .dot.warn{background:var(--warn)} .dot.bad{background:var(--bad)}
+  .spinner{width:12px;height:12px;border:2px solid #cbd5e1;border-top-color:var(--accent);border-radius:999px;animation:spin 1s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  /* ===== Cards & Table-ish list ===== */
+  .card{border:1px solid var(--line);border-radius:12px;background:#fff}
+  .card header{display:flex;justify-content:space-between;align-items:center;padding:8px 10px;border-bottom:1px dashed var(--line);background:#fff;color:var(--ink)}
+  .card header h2{margin:0;font-size:15px}
+  .items{padding:8px}
+  .item{display:grid;grid-template-columns:1fr 140px 92px;gap:6px;align-items:start;border:1px solid var(--line);border-radius:10px;padding:6px 8px;margin:6px 0}
+  .item:hover{background:#f8fafc}
+  .item .name{display:flex;align-items:center;gap:6px}
+  .badge{font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:12px;border:1px solid var(--line);border-radius:999px;padding:2px 6px;background:#fff;color:#334155}
+  .sev{width:8px;height:8px;border-radius:999px;display:inline-block; margin-top: 5px;}
+  .sev.bad{background:var(--bad)} .sev.warn{background:var(--warn)} .sev.ok{background:var(--good)}
+  .hint{color:#475569;font-size:12px}
+  .copy-area{white-space:pre-wrap;border:1px dashed var(--line);border-radius:10px;padding:8px;background:#f8fafc;font:13px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;color:#334155}
+
+  /* ===== Sticky actions ===== */
+  .sticky{position:sticky;bottom:0;background:#fffffff2;backdrop-filter: blur(6px);border-top:1px solid var(--line);padding:8px;display:flex;gap:8px;justify-content:space-between;align-items:center}
+  .toast{position:fixed;left:50%;bottom:16px;transform:translateX(-50%) translateY(20px);background:#0f172a;color:#fff;padding:10px 14px;border-radius:10px;opacity:0;pointer-events:none;transition:.25s;box-shadow:0 10px 24px rgba(15,23,42,.25);font-size:13px}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+  /* ===== Responsive ===== */
+  @media (max-width: 900px){
+    .layout{grid-template-columns:1fr}
+    .sidebar{position:fixed; inset:52px 0 auto 0; height:calc(100vh - 52px); transform:translateX(-100%); transition:.25s; z-index:40}
+    body.show-sidebar .sidebar{transform:none}
+  }
+</style>
+</head>
+<body>
+  <!-- ===== Topbar ===== -->
+  <header class="topbar" role="banner">
+    <div class="wrap">
+      <button class="icon-btn" id="btnMenu" aria-label="Toggle sidebar">☰</button>
+      <div class="brand">สั่งสินค้าเหลือน้อย — Dashboard</div>
+      <div class="top-actions">
+        <input type="search" id="globalSearch" placeholder="ค้นหาทั้งระบบ (ชื่อ/SKU/ซัพพลายเออร์)" />
+        <span class="tag">Marketing</span>
+      </div>
+    </div>
+  </header>
+
+  <div class="layout">
+    <!-- ===== Sidebar ===== -->
+    <aside class="sidebar" role="navigation" aria-label="รายชื่อซัพพลายเออร์">
+      <div class="logo">📦 ซัพพลายเออร์</div>
+      <div class="filter">
+        <label><input type="checkbox" id="onlyUrgentSup"/> เฉพาะที่ต้องสั่ง (>0)</label>
+      </div>
+      <nav class="nav" id="supList"></nav>
+    </aside>
+
+    <!-- ===== Main Content ===== -->
+    <main class="content" role="main">
+      <div class="container">
+
+        <!-- Sync/status bar -->
+        <div class="panel bar" id="syncBar">
+          <div class="status" id="syncText"><span class="dot"></span> พร้อมใช้งาน</div>
+          <div class="bar" style="margin-left:auto">
+            <button id="btnResync" class="small">ซิงก์อีกครั้ง</button>
+          </div>
+        </div>
+
+        <!-- Controls -->
+        <div class="bar" id="topControls" style="margin-top:10px">
+          <label>ค้นหาในซัพพลายเออร์
+            <input id="itemSearch" type="text" placeholder="ชื่อหรือ SKU" />
+          </label>
+          <label class="bar"><input type="checkbox" id="onlyAlert" checked/> เฉพาะรายการที่ต้องสั่ง</label>
+          <button id="prevSup" class="small ghost">◀ ก่อนหน้า</button>
+          <button id="nextSup" class="small ghost">ถัดไป ▶</button>
+          <span class="pill" id="supMeta">-</span>
+        </div>
+
+        <!-- File upload / demo -->
+        <div class="panel bar" id="uploadPanel" style="margin-top:12px">
+          <strong>อัปโหลด CSV</strong>
+          <input id="file" type="file" accept=".csv" />
+          <button id="loadDemo" class="small ghost">CSV ตัวอย่าง</button>
+          <span class="hint">คอลัมน์: Supplier, SKU, Name, In stock, Low stock, Optimal stock</span>
+        </div>
+
+        <!-- Main view -->
+        <div id="view" style="margin-top:10px"></div>
+
+        <!-- Sticky actions -->
+        <div class="sticky">
+          <div class="bar">
+            <button id="copyUrgentAll" class="small flat">คัดลอก “เร่งด่วนทั้งหมด”</button>
+            <span class="pill" id="stats">-</span>
+          </div>
+          <div class="bar">
+            <button id="btnCopy" class="small">คัดลอก (ซัพพลายเออร์นี้)</button>
+            <button id="btnShare" class="small flat">แชร์</button>
+            <button id="btnDL" class="small ghost">ดาวน์โหลด TXT</button>
+          </div>
+        </div>
+
+      </div>
+      <footer>© 2025 — Minimal Blue Dashboard • พื้นที่หน้าจอเว้นวรรคกว้าง อ่านง่าย ปุ่มมุมโค้ง • ฟอนต์ Sans-serif</footer>
+    </main>
+  </div>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+<script>
+// ===== Config =====
+const REMOTE_CSV_URL = 'https://raw.githubusercontent.com/kjakkrid1992-tech/loyverse-export-public/main/data/loyverse-price-latest.csv';
+const LS = { CSV:'SNL_last_csv', SYNC_AT:'SNL_last_sync_at', COUNT:'SNL_last_count' };
+const PREFS = { ONLY_URG_SUP:'SNL_only_urgent_sup' };
+
+// ===== Utils =====
+const $ = s => document.querySelector(s);
+const el = (t,c,h)=>{const n=document.createElement(t); if(c) n.className=c; if(h!=null) n.innerHTML=h; return n;};
+const num = v => {const n=parseFloat(String(v).replace(/,/g,'').trim()); return isNaN(n)?0:n};
+const notEmpty = v => v!=null && String(v).trim()!=='';
+const supplierName = v => notEmpty(v)? String(v).trim() : 'ไม่ระบุซัพพลายเออร์';
+const fmtThai = ts => new Intl.DateTimeFormat('th-TH',{dateStyle:'medium', timeStyle:'short'}).format(ts);
+function toast(msg){ const t=$('#toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'), 1600); }
+
+// Robust CSV parser
+function parseCSV(text){
+  const d = text.indexOf('\t')>-1 ? '\t' : (text.indexOf(';')>-1 ? ';' : ',');
+  const rows = [];
+  let i=0, field='', row=[], inQuotes=false; const s=text, dl=d;
+  while(i<=s.length){
+    const c = s[i];
+    if(inQuotes){
+      if(c==='\"'){
+        if(s[i+1]==='\"'){ field+='\"'; i++; } else { inQuotes=false; }
+      } else { field += c ?? ''; }
+    } else {
+      if(c==='\"') { inQuotes=true; }
+      else if(c===dl) { row.push(field); field=''; }
+      else if(c==='\n' || c==='\r' || i===s.length){
+        row.push(field); field='';
+        if(row.length>1 || (row.length===1 && row[0]!=='')) rows.push(row);
+        row=[];
+        if(c==='\r' && s[i+1]==='\n') i++;
+      } else { field += c ?? ''; }
+    }
+    i++;
+  }
+  return rows;
+}
+// ==== Hotfix: replace parser at runtime to avoid stray newline tokens ====
+const _parseCSV_fixed = function(text){
+  const d = text.indexOf('\t')>-1 ? '\t' : (text.indexOf(';')>-1 ? ';' : ',');
+  const rows = [];
+  let i=0, field='', row=[], inQuotes=false; const s=text, dl=d;
+  while(i<=s.length){
+    const c = s[i];
+    if(inQuotes){
+      if(c==='\"'){
+        if(s[i+1]==='\"'){ field+='\"'; i++; } else { inQuotes=false; }
+      } else { field += c ?? ''; }
+    } else {
+      if(c==='\"') { inQuotes=true; }
+      else if(c===dl) { row.push(field); field=''; }
+      else if(c==='\n' || c==='\r' || i===s.length){
+        row.push(field); field='';
+        if(row.length>1 || (row.length===1 && row[0]!=='')) rows.push(row);
+        row=[];
+        if(c==='\r' && s[i+1]==='\n') i++;
+      } else { field += c ?? ''; }
+    }
+    i++;
+  }
+  return rows;
+};
+try{ parseCSV = _parseCSV_fixed; }catch(e){}
+
+
+function mapColumns(H){
+  const headers=H.map(h=>String(h||'').trim());
+  const find=(...keys)=>{ for(const k of keys){ const i=headers.findIndex(h=>h.toLowerCase()===k.toLowerCase()); if(i>-1) return i; } for(const k of keys){ const i=headers.findIndex(h=>h.toLowerCase().includes(k.toLowerCase())); if(i>-1) return i; } return -1; };
+  return {
+    supplier:find('Supplier','ซัพพลายเออร์'),
+    sku:find('SKU','รหัส'),
+    name:find('Name','ชื่อ'),
+    instock:find('In stock [JERGUN CRAFT]','In stock','คงเหลือ'),
+    low:find('Low stock [JERGUN CRAFT]','Low stock','จุดเตือน'),
+    optimal:find('Optimal stock [JERGUN CRAFT]','Optimal stock','เป้าหมาย')
+  };
+}
+
+function computeItems(rows,col){
+  const items=[]; for(let r=1;r<rows.length;r++){
+    const row=rows[r]; if(!row||row.length===0) continue;
+    const supplier=supplierName(row[col.supplier]);
+    const sku=(row[col.sku]||'').toString().trim();
+    const name=(row[col.name]||'').toString().trim();
+    const instock=num(row[col.instock]);
+    const low=num(row[col.low]);
+    const optimal=num(row[col.optimal]);
+    const reorder=Math.max(optimal-instock,0);
+    items.push({supplier,sku,name,instock,low,optimal,reorder,editQty:''});
+  } return items;
+}
+
+function groupBySupplier(items){ const m=new Map(); for(const it of items){ if(!m.has(it.supplier)) m.set(it.supplier,[]); m.get(it.supplier).push(it);} return m; }
+const urgentCountSupplier = rows => rows.filter(it=> it.instock<=it.low && it.reorder>0).length;
+
+// ===== State =====
+const state={ items:[], bySup:new Map(), order:[], cur:0 };
+
+function buildLine(it, forCopy){ const showSKU=true; const qty=(it.editQty && it.editQty.trim()!=='')? it.editQty.trim() : ('x '+it.reorder); const head=[showSKU && it.sku? it.sku:null, it.name].filter(Boolean).join(' '); return `${head} ${qty}${forCopy?'':''}`; }
+function buildSupplierBlock(supplier, rows){ const lines=[String(supplier),'']; for(const it of rows) lines.push(buildLine(it,true)); return lines.join('\n'); }
+
+// ===== Rendering =====
+function refreshOrder(){
+  state.bySup = groupBySupplier(state.items);
+  const entries = Array.from(state.bySup.entries());
+  entries.sort((a,b)=>{
+    const ub = urgentCountSupplier(b[1]);
+    const ua = urgentCountSupplier(a[1]);
+    if(ub!==ua) return ub-ua; // Highest count first
+    return a[0].localeCompare(b[0],'th');
+  });
+  state.order = entries.map(e=>e[0]);
+  if(state.cur>=state.order.length) state.cur=0;
+}
+
+function renderTopControls(){
+  $('#prevSup').onclick=()=>{ state.cur=(state.cur-1+state.order.length)%state.order.length; renderSupplier(); updateSidebarActive(); $('.content').scrollTop = 0; };
+  $('#nextSup').onclick=()=>{ state.cur=(state.cur+1)%state.order.length; renderSupplier(); updateSidebarActive(); $('.content').scrollTop = 0; };
+}
+
+function renderSidebarSuppliers(){
+  const list = document.getElementById('supList');
+  if(!list) return;
+  list.innerHTML='';
+  const onlyUrg = localStorage.getItem(PREFS.ONLY_URG_SUP)==='1';
+
+  // If onlyUrg is set and the current supplier has no urgent items, move to the first one that does.
+  if(onlyUrg){
+    const idx = state.order.findIndex(n=> urgentCountSupplier(state.bySup.get(n)||[])>0);
+    if(idx>-1 && urgentCountSupplier(state.bySup.get(state.order[state.cur])||[])===0){ state.cur = idx; }
+  }
+
+  state.order.forEach((name, idx)=>{
+    const rows = state.bySup.get(name)||[];
+    const cnt = urgentCountSupplier(rows);
+    if(onlyUrg && cnt===0) return; // Hide if count is 0 and filter is on
+    const lvl = cnt>=6? 'lv3' : cnt>=3? 'lv2' : cnt>=1? 'lv1' : 'lv0';
+    const a=document.createElement('a');
+    a.href='#';
+    a.dataset.name=name;
+    a.className = (idx===state.cur? 'active' : '');
+    a.innerHTML = `<span>${name}</span><span class="count ${lvl}">${cnt}</span>`;
+    a.onclick=(ev)=>{ ev.preventDefault(); state.cur=idx; renderSupplier(); updateSidebarActive(); $('.content').scrollTop = 0; };
+    list.appendChild(a);
+  });
+}
+function updateSidebarActive(){
+  document.querySelectorAll('#supList a').forEach((a,i)=> a.classList.toggle('active', i===state.cur));
+}
+
+function renderSupplier(){ const name=state.order[state.cur]; const rowsAll=state.bySup.get(name)||[]; const onlyAlert=$('#onlyAlert').checked; const q=($('#itemSearch').value||'').trim().toLowerCase();
+  let rows=rowsAll.filter(it=> !onlyAlert || (it.instock<=it.low && it.reorder>0));
+  if(q) rows=rows.filter(it=> it.name.toLowerCase().includes(q) || (it.sku||'').toLowerCase().includes(q));
+
+  const view=$('#view'); view.innerHTML='';
+  const card=el('div','card');
+  const head=el('header','');
+  const hleft=el('div','bar',`<h2>${name||'-'}</h2>`);
+  const urgent=rowsAll.filter(it=> it.instock<=it.low && it.reorder>0).length;
+  const zero=rowsAll.filter(it=> it.instock<=0).length;
+  const meta=el('span','pill',`${rows.length} จาก ${rowsAll.length} รายการ • เร่งด่วน ${urgent}${zero?` • หมด ${zero}`:''}`);
+  hleft.appendChild(meta);
+  head.appendChild(hleft);
+  card.appendChild(head);
+
+  const list=el('div','items');
+  rows.forEach(it=>{
+    const row=el('div','item');
+    const nameBox=el('div','name');
+    const sev=el('i',`sev ${it.instock<=0?'bad':(it.instock<=it.low?'warn':'ok')}`,'');
+    const sku=el('span','badge', it.sku||'-');
+    
+    const nameDetails = el('div');
+    const nm=el('span','',it.name);
+    const stockInfo = el('div', 'hint', `คงเหลือ ${it.instock} • จุดเตือน ${it.low} • เป้าหมาย ${it.optimal}`);
+    nameDetails.append(nm, stockInfo);
+    
+    nameBox.append(sev, sku, nameDetails);
+
+    const qtyBox=el('div','');
+    const input=document.createElement('input'); input.type='text'; input.placeholder=`x ${it.reorder}`; input.value=it.editQty; input.oninput=()=>{ it.editQty=input.value; refreshPreview(); };
+    qtyBox.appendChild(input);
+
+    const actions=el('div',''); const btnLine=el('button','small ghost','คัดลอก'); btnLine.onclick=()=> copyText(buildLine(it,true)); actions.appendChild(btnLine);
+
+    row.append(nameBox, qtyBox, actions); list.appendChild(row);
+  });
+
+  const preview=el('div','panel', '');
+  const head2=el('div','hint','ข้อความที่จะคัดลอก');
+  const pre=el('div','copy-area');
+  function refreshPreview(){ pre.textContent = buildSupplierBlock(name, rows); }
+  refreshPreview();
+  preview.append(head2, pre);
+
+  card.appendChild(list); card.appendChild(preview); view.appendChild(card);
+
+  // footer buttons bind to this supplier
+  $('#btnCopy').onclick=()=> copyText(buildSupplierBlock(name, rows));
+  $('#btnShare').onclick=()=> shareText('ออเดอร์: '+name, buildSupplierBlock(name, rows));
+  $('#btnDL').onclick=()=> downloadSupplier(name, buildSupplierBlock(name, rows));
+
+  $('#supMeta').textContent = `${state.cur+1}/${state.order.length}`;
+  updateSidebarActive();
+  updateStats();
+}
+
+function updateStats(){ const total=state.items.length; const sups=state.order.length; const urgentAll = state.items.filter(it=> it.instock<=it.low && it.reorder>0).length; $('#stats').textContent = `${total} รายการ • ${sups} ซัพพลายเออร์ • เร่งด่วน ${urgentAll}`; }
+
+// ===== Copy/Share helpers =====
+async function copyText(text){ try{ await navigator.clipboard.writeText(text); toast('คัดลอกแล้ว ✓'); }catch(e){ const ta=document.createElement('textarea'); ta.value=text; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove(); toast('คัดลอกแล้ว ✓'); }}
+async function shareText(title, text){ if(navigator.share){ try{ await navigator.share({title, text}); }catch(e){ if(e?.name!=='AbortError') toast('แชร์ไม่สำเร็จ'); } } else { await copyText(text); toast('คัดลอกแทนให้แล้ว'); } }
+function downloadSupplier(supplier, text){ const safe=String(supplier||'').replace(/[\/*?:"<>|]/g,'_'); const blob=new Blob([text],{type:'text/plain;charset=utf-8'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`ออเดอร์_${safe}.txt`; a.click(); URL.revokeObjectURL(a.href); }
+
+// ===== Sync / Cache =====
+function setSyncUI(stateStr, data={}){ const t=$('#syncText'); if(stateStr==='loading'){ t.innerHTML=`<span class="spinner"></span> <strong>กำลังซิงก์...</strong>`; } else if(stateStr==='ok'){ t.innerHTML=`<span class="dot ok"></span> ซิงก์แล้ว ${data.count||0} รายการ • ${fmtThai(new Date(data.at))}`; } else if(stateStr==='cached'){ t.innerHTML=`<span class="dot warn"></span> ใช้ข้อมูลล่าสุดจากเครื่อง • ${fmtThai(new Date(data.at))} • ${data.count||0} รายการ`; } else if(stateStr==='error'){ t.innerHTML=`<span class="dot bad"></span> ซิงก์ไม่สำเร็จ — ใช้ข้อมูลเดิมในเครื่อง`; } else { t.innerHTML=`<span class="dot"></span> พร้อมใช้งาน`; } }
+
+function loadFromCache(){ const csv=localStorage.getItem(LS.CSV); const at=Number(localStorage.getItem(LS.SYNC_AT)||0); if(csv){ try{ const rows=parseCSV(csv); const col=mapColumns(rows[0]); state.items=computeItems(rows,col); refreshOrder(); renderSidebarSuppliers(); renderTopControls(); renderSupplier(); if(at) setSyncUI('cached',{at,count:state.items.length}); }catch(e){ console.error('cache parse',e);} }}
+
+async function syncRemote({manual=false}={}){ const ctl=new AbortController(); const timer=setTimeout(()=>ctl.abort(),15000); setSyncUI('loading'); try{ const res=await fetch(REMOTE_CSV_URL,{cache:'no-store', signal:ctl.signal}); if(!res.ok) throw new Error('HTTP '+res.status); const text=await res.text(); const rows=parseCSV(text); if(!rows.length) throw new Error('EMPTY'); const col=mapColumns(rows[0]); const miss=Object.values(col).some(v=>v<0); if(miss) throw new Error('MISSING_COLS'); state.items=computeItems(rows,col); // save success only
+    localStorage.setItem(LS.CSV,text); const at=Date.now(); localStorage.setItem(LS.SYNC_AT, String(at)); localStorage.setItem(LS.COUNT, String(state.items.length));
+    refreshOrder(); renderSidebarSuppliers(); renderTopControls(); renderSupplier(); setSyncUI('ok',{at,count:state.items.length}); if(manual) toast('ซิงก์แล้ว ✓');
+  }catch(err){ console.error('sync',err); setSyncUI('error'); toast('ซิงก์ไม่สำเร็จ — ใช้ข้อมูลเดิม'); if(!state.items.length) loadFromCache(); }
+  finally{ clearTimeout(timer); }
+}
+
+// ===== Events =====
+$('#itemSearch').addEventListener('input', ()=> renderSupplier());
+$('#onlyAlert').addEventListener('change', ()=> renderSupplier());
+$('#btnResync').addEventListener('click', ()=> syncRemote({manual:true}));
+$('#copyUrgentAll').addEventListener('click', ()=>{
+  const by = groupBySupplier(state.items.filter(it=> it.instock<=it.low && it.reorder>0));
+  const blocks = [];
+  for(const [sup, rows] of by.entries()) blocks.push(buildSupplierBlock(sup, rows));
+  copyText(blocks.join('\n\n'));
+});
+
+$('#file').addEventListener('change', async ev=>{ const f=ev.target.files[0]; if(!f) return; const text=await f.text(); const rows=parseCSV(text); if(!rows.length) return alert('Cannot read CSV'); const col=mapColumns(rows[0]); const miss=Object.values(col).some(v=>v<0); if(miss) return alert('Missing columns'); state.items=computeItems(rows,col); localStorage.setItem(LS.CSV,text); const at=Date.now(); localStorage.setItem(LS.SYNC_AT, String(at)); localStorage.setItem(LS.COUNT, String(state.items.length)); refreshOrder(); renderSidebarSuppliers(); renderTopControls(); renderSupplier(); setSyncUI('cached',{at, count:state.items.length}); toast('Updated from file ✓'); });
+
+$('#loadDemo').addEventListener('click', ()=>{ const headers=['Supplier','SKU','Name','In stock [JERGUN CRAFT]','Low stock [JERGUN CRAFT]','Optimal stock [JERGUN CRAFT]']; const rows=[ ['บริษัท ดริ้งก์ไว๊ซ์ จำกัด','10864','set ซอดแจ้ง','4','6','6'], ['บริษัท ดริ้งก์ไว๊ซ์ จำกัด','10757','จ๊วด โคล่า 360 ml','0','6','12'], ['บริษัท ระยองพรีเมียมคราฟต์ สปิริตส์ จำกัด','10404','RAYONG CRAFT Spirits(น้ำตาลดอกมะพร้าว.สับปะรด.น้ำตาลโตนด)','3','5','5'], ['ไม่ระบุ','','ตัวอย่าง ไม่มี SKU','0','1','4'] ]; const csv=[headers.join(','), ...rows.map(r=> r.map(v=>{const s=String(v); return /[",\n]/.test(s)? '"'+s.replace(/"/g,'""')+'"' : s;}).join(','))].join('\n'); const blob=new Blob([csv],{type:'text/csv;charset=utf-8'}); const f=new File([blob],'demo.csv',{type:'text/csv'}); const dt=new DataTransfer(); dt.items.add(f); const input=$('#file'); input.files=dt.files; input.dispatchEvent(new Event('change')); });
+
+// Topbar controls
+$('#btnMenu').addEventListener('click', ()=> document.body.classList.toggle('show-sidebar'));
+$('#globalSearch').addEventListener('input', (e)=>{
+  const q=(e.target.value||'').trim().toLowerCase();
+  if(!q){ renderSupplier(); return; }
+  const name=state.order[state.cur]; const rowsAll=state.bySup.get(name)||[];
+  const onlyAlert=$('#onlyAlert').checked;
+  let rows=rowsAll.filter(it=> !onlyAlert || (it.instock<=it.low && it.reorder>0));
+  rows=rows.filter(it=> it.name.toLowerCase().includes(q) || (it.sku||'').toLowerCase().includes(q) || (it.supplier||'').toLowerCase().includes(q));
+  const view=$('#view'); view.innerHTML='';
+  const card=el('div','card');
+  const head=el('header','');
+  head.appendChild(el('div','',`<h2>Global Search: <span class="pill">${q}</span></h2>`));
+  card.appendChild(head);
+  const list=el('div','items');
+  rows.forEach(it=>{
+    const row=el('div','item');
+    const nameBox=el('div','name');
+    const sev=el('i',`sev ${it.instock<=0?'bad':(it.instock<=it.low?'warn':'ok')}`,'');
+    const sku=el('span','badge', it.sku||'-');
+    const nm=el('span','',`[${it.supplier}] ${it.name}`);
+    nameBox.append(sev, sku, nm);
+    const qtyBox=el('div','',`<span class="pill">Stock ${it.instock}</span>`);
+    const actions=el('div',''); const btnLine=el('button','small ghost','Copy'); btnLine.onclick=()=> copyText(buildLine(it,true)); actions.appendChild(btnLine);
+    row.append(nameBox, qtyBox, actions); list.appendChild(row);
+  });
+  card.appendChild(list); view.appendChild(card);
+});
+
+// ===== Boot =====
+loadFromCache();
+syncRemote();
+
+const cbUrg = document.getElementById('onlyUrgentSup');if(cbUrg){
+  cbUrg.checked = localStorage.getItem(PREFS.ONLY_URG_SUP)==='1';
+  cbUrg.addEventListener('change', ()=>{
+    localStorage.setItem(PREFS.ONLY_URG_SUP, cbUrg.checked?'1':'0');
+    renderSidebarSuppliers();
+  });
+}
+</script>
+</body>
+</html>
