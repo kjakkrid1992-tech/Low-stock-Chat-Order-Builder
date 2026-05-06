@@ -3,121 +3,142 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>สั่งสินค้าเหลือน้อย — Dashboard โทนฟ้า-ขาว (มี Sidebar)</title>
+<title>สั่งสินค้าเหลือน้อย — Professional Dashboard (Compact)</title>
 <style>
-  :root{
-    --bg:#0b1220;            /* topbar dark blue */
-    --bg-2:#0e1a33;          /* sidebar dark blue */
-    --ink:#0f172a;           /* text */
-    --muted:#64748b;         /* secondary text */
-    --line:#e5e9f2;          /* borders */
-    --accent:#2563eb;        /* blue accent */
-    --good:#16a34a;          /* green */
-    --warn:#eab308;          /* amber */
-    --bad:#dc2626;           /* red */
-    --paper:#ffffff;         /* surface */
-    --card:#f8fafc;          /* card */
-    --hover:#eff6ff;         /* light blue hover */
+  :root {
+    --bg: #0f172a;
+    --bg-2: #1e293b;
+    --ink: #1e293b;
+    --muted: #64748b;
+    --line: #e2e8f0;
+    --accent: #2563eb;
+    --accent-hover: #1d4ed8;
+    --good: #16a34a;
+    --warn: #eab308;
+    --bad: #ef4444;
+    --paper: #ffffff;
+    --card: #f8fafc;
   }
-  *{box-sizing:border-box}
-  html,body{height:100%;margin:0; overflow: hidden;} /* Prevent main page scroll */
-  body{font:14px/1.5 ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial; color:var(--ink); background:#fff;}
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; overflow: hidden; }
+  body { font: 13px/1.4 ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; color: var(--ink); background: #f1f5f9; }
 
   /* ===== Layout ===== */
-  .topbar{position:sticky;top:0;z-index:50;background:var(--bg);color:#fff;border-bottom:1px solid rgba(255,255,255,.06)}
-  .topbar .wrap{max-width:1200px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:12px}
-  .brand{font-size:16px;font-weight:600;margin-right:auto}
-  .icon-btn{border:0;background:rgba(255,255,255,.08); color:#fff; border-radius:10px; padding:8px 10px; cursor:pointer}
-  .icon-btn:hover{background:rgba(255,255,255,.14)}
+  .topbar { position: sticky; top: 0; z-index: 50; background: var(--bg); color: #fff; border-bottom: 1px solid rgba(255,255,255,.1); box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1); }
+  .topbar .wrap { max-width: 1400px; margin: 0 auto; padding: 8px 20px; display: flex; align-items: center; gap: 16px; }
+  .brand { font-size: 15px; font-weight: 600; margin-right: auto; letter-spacing: 0.3px; }
+  .icon-btn { border: 0; background: rgba(255,255,255,.08); color: #fff; border-radius: 6px; padding: 6px 10px; cursor: pointer; transition: background 0.2s; }
+  .icon-btn:hover { background: rgba(255,255,255,.15); }
 
-  .layout{display:grid; grid-template-columns:260px 1fr; height:calc(100vh - 52px)} /* Fix height */
-  .sidebar{background:var(--bg-2); color:#e5e7eb; padding:14px 12px; border-right:1px solid rgba(255,255,255,.06); display: flex; flex-direction: column; min-height: 0;} /* HOTFIX */
-  .sidebar .logo{display:flex; align-items:center; gap:8px; font-weight:700; letter-spacing:.2px; margin:4px 10px 14px; flex-shrink: 0;}
-  .sidebar .sidebar-search { padding: 0 10px 10px; flex-shrink: 0;}
-  .sidebar .sidebar-search input {
-    width: 100%;
-    background: rgba(255,255,255,.08);
-    border: 1px solid rgba(255,255,255,.2);
-    color: #fff;
-    border-radius: 8px;
-    padding: 8px 10px;
-    font-size: 13px;
-  }
-  .sidebar .sidebar-search input::placeholder { color: #9ca3af; }
-  .sidebar .filter{margin:6px 10px 10px;font-size:12px;color:#e5e7eb;opacity:.95; flex-shrink: 0;}
-  .sidebar .filter input{margin-right:6px}
-  .nav{display:flex; flex-direction:column; gap:2px; margin:8px; overflow-y: auto; flex-grow: 1; min-height: 0;}
-  .nav a{display:flex; align-items:center; gap:10px; text-decoration:none; color:#e5e7eb; padding:10px 12px; border-radius:10px}
-  .nav a:hover{background:rgba(255,255,255,.06)}
-  .nav a.active{background:rgba(37,99,235,.22); color:#fff}
+  .layout { display: grid; grid-template-columns: 260px 1fr; height: calc(100vh - 45px); }
+  .sidebar { background: var(--bg-2); color: #f1f5f9; padding: 16px 12px; border-right: 1px solid rgba(255,255,255,.05); display: flex; flex-direction: column; min-height: 0; box-shadow: 1px 0 5px rgba(0,0,0,0.05); z-index: 10;}
+  .sidebar .logo { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 14px; margin: 0 4px 12px; flex-shrink: 0; color: #fff; }
+  .sidebar .sidebar-search { padding: 0 4px 12px; flex-shrink: 0; }
+  .sidebar .sidebar-search input { width: 100%; background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.15); color: #fff; border-radius: 6px; padding: 8px 10px; font-size: 12px; transition: border 0.2s; }
+  .sidebar .sidebar-search input:focus { border-color: rgba(255,255,255,.4); outline: none; }
+  .sidebar .sidebar-search input::placeholder { color: #94a3b8; }
   
-  .nav .count{margin-left:auto;font-size:12px;padding:2px 8px;border-radius:999px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);color:#e2e8f0}
-  .nav .count.lv0{background:rgba(22,163,74,.18);border-color:rgba(22,163,74,.35)}  /* 0 items (light green) */
-  .nav .count.lv1{background:rgba(234,179,8,.20);border-color:rgba(234,179,8,.40)}  /* 1–2 (light yellow) */
-  .nav .count.lv2{background:rgba(234,179,8,.32);border-color:rgba(234,179,8,.55)}  /* 3–5 (dark yellow) */
-  .nav .count.lv3{background:rgba(220,38,38,.35);border-color:rgba(220,38,38,.60)}  /* >=6 (red) */
+  .sidebar .filter { margin: 0 4px 8px; font-size: 12px; color: #cbd5e1; flex-shrink: 0; display: flex; align-items: center; gap: 6px; cursor: pointer; }
+  .nav { display: flex; flex-direction: column; gap: 2px; margin: 0; overflow-y: auto; flex-grow: 1; min-height: 0; padding: 0 4px; }
+  .nav a { display: flex; align-items: center; gap: 8px; text-decoration: none; color: #cbd5e1; padding: 8px 10px; border-radius: 6px; transition: all 0.2s; font-size: 12px; font-weight: 500; }
+  .nav a:hover { background: rgba(255,255,255,.08); color: #fff; }
+  .nav a.active { background: var(--accent); color: #fff; box-shadow: 0 2px 4px rgba(37,99,235,0.3); }
+  
+  .nav .count { margin-left: auto; font-size: 11px; font-weight: 600; padding: 2px 6px; border-radius: 999px; background: rgba(255,255,255,.1); color: #f8fafc; }
+  .nav .count.lv0 { opacity: 0.5; }
+  .nav .count.lv1 { background: rgba(234,179,8,.8); color: #fff; }
+  .nav .count.lv2 { background: rgba(249,115,22,.9); color: #fff; }
+  .nav .count.lv3 { background: rgba(239,68,68,1); color: #fff; }
 
-  .content{background:#fff; overflow-y: auto; min-height: 0;} /* HOTFIX */
-  .container{max-width:1200px; margin:0 auto; padding:16px}
+  .content { background: #f8fafc; overflow-y: auto; min-height: 0; position: relative; }
+  .container { max-width: 1400px; margin: 0 auto; padding: 16px; }
 
-  footer{border-top:1px solid var(--line); padding:12px 16px; color:#64748b; background:#fff}
-
-  /* ===== Custom Scrollbar for Sidebar ===== */
-  .sidebar::-webkit-scrollbar, .nav::-webkit-scrollbar {
-    width: 8px;
-  }
-  .sidebar::-webkit-scrollbar-track, .nav::-webkit-scrollbar-track {
-    background: transparent; /* Make track invisible */
-  }
-  .sidebar::-webkit-scrollbar-thumb, .nav::-webkit-scrollbar-thumb {
-    background-color: #4a5568; /* A visible muted gray */
-    border-radius: 4px;
-  }
-  .sidebar::-webkit-scrollbar-thumb:hover, .nav::-webkit-scrollbar-thumb:hover {
-    background-color: #718096; /* Lighter gray on hover */
-  }
-
+  /* ===== Custom Scrollbar ===== */
+  ::-webkit-scrollbar { width: 8px; height: 8px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 10px; border: 2px solid transparent; background-clip: content-box; }
+  ::-webkit-scrollbar-thumb:hover { background-color: #94a3b8; }
+  .sidebar::-webkit-scrollbar-thumb { background-color: #475569; }
+  .sidebar::-webkit-scrollbar-thumb:hover { background-color: #64748b; }
 
   /* ===== Generic Controls ===== */
-  select,input[type=text],input[type=search],button{border:1px solid var(--line);border-radius:10px;padding:8px 10px;font-size:14px;background:#fff;color:var(--ink)}
-  button{cursor:pointer;background:var(--accent);color:#fff;border:0}
-  button.ghost{background:#fff;color:var(--accent);border:1px solid var(--accent)}
-  button.flat{background:#eef2ff;color:#1e40af}
-  button.small{padding:6px 10px;font-size:12px;border-radius:8px}
-  .pill{padding:4px 8px;border-radius:999px;background:#f1f5f9;border:1px solid var(--line);font-size:12px}
-  .panel{border:1px solid var(--line);border-radius:12px;background:var(--card);padding:10px}
-  .bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  select, input[type=text], input[type=search], button { border: 1px solid var(--line); border-radius: 6px; padding: 6px 10px; font-size: 13px; background: #fff; color: var(--ink); font-family: inherit; transition: all 0.2s; }
+  input[type=text]:focus, input[type=search]:focus { border-color: var(--accent); outline: none; box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
+  button { cursor: pointer; background: var(--accent); color: #fff; border: 1px solid transparent; font-weight: 500; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
+  button:hover { background: var(--accent-hover); }
+  button.ghost { background: #fff; color: var(--muted); border: 1px solid var(--line); }
+  button.ghost:hover { background: #f1f5f9; color: var(--ink); border-color: #cbd5e1; }
+  button.flat { background: #eff6ff; color: #1e40af; border-color: transparent; }
+  button.flat:hover { background: #dbeafe; }
+  button.small { padding: 4px 10px; font-size: 12px; }
+  
+  .pill { padding: 2px 8px; border-radius: 999px; background: #e2e8f0; border: 1px solid transparent; font-size: 11px; font-weight: 500; color: #475569; }
+  .panel { border: 1px solid var(--line); border-radius: 8px; background: #fff; padding: 12px; box-shadow: 0 1px 2px rgba(0,0,0,0.02); margin-bottom: 12px; }
+  .bar { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
 
-  .status{display:flex;align-items:center;gap:8px}
-  .dot{width:10px;height:10px;border-radius:999px;background:#94a3b8;display:inline-block}
-  .dot.ok{background:var(--good)} .dot.warn{background:var(--warn)} .dot.bad{background:var(--bad)}
-  .spinner{width:12px;height:12px;border:2px solid #cbd5e1;border-top-color:var(--accent);border-radius:999px;animation:spin 1s linear infinite}
-  @keyframes spin{to{transform:rotate(360deg)}}
+  .status { display: flex; align-items: center; gap: 6px; font-weight: 500; font-size: 12px; }
+  .dot { width: 8px; height: 8px; border-radius: 999px; background: #94a3b8; display: inline-block; }
+  .dot.ok { background: var(--good); box-shadow: 0 0 0 3px rgba(22,163,74,0.1); }
+  .dot.warn { background: var(--warn); }
+  .dot.bad { background: var(--bad); box-shadow: 0 0 0 3px rgba(239,68,68,0.2); }
+  .spinner { width: 12px; height: 12px; border: 2px solid #cbd5e1; border-top-color: var(--accent); border-radius: 999px; animation: spin 0.8s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg) } }
 
-  /* ===== Cards & Table-ish list ===== */
-  .card{border:1px solid var(--line);border-radius:12px;background:#fff}
-  .card header{display:flex;justify-content:space-between;align-items:center;padding:8px 10px;border-bottom:1px dashed var(--line);background:#fff;color:var(--ink)}
-  .card header h2{margin:0;font-size:15px}
-  .items{padding:8px}
-  .item{display:grid;grid-template-columns:1fr 140px 92px;gap:6px;align-items:start;border:1px solid var(--line);border-radius:10px;padding:6px 8px;margin:6px 0}
-  .item:hover{background:#f8fafc}
-  .item .name{display:flex;align-items:center;gap:6px}
-  .badge{font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:12px;border:1px solid var(--line);border-radius:999px;padding:2px 6px;background:#fff;color:#334155}
-  .sev{width:8px;height:8px;border-radius:999px;display:inline-block; margin-top: 5px;}
-  .sev.bad{background:var(--bad)} .sev.warn{background:var(--warn)} .sev.ok{background:var(--good)}
-  .hint{color:#475569;font-size:12px}
-  .copy-area{white-space:pre-wrap;border:1px dashed var(--line);border-radius:10px;padding:8px;background:#f8fafc;font:13px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;color:#334155}
+  /* ===== Stale Data Alert Banner ===== */
+  .alert-banner { background: #fef2f2; border-left: 4px solid var(--bad); border-radius: 8px; padding: 12px 16px; margin-bottom: 12px; display: none; align-items: center; gap: 12px; color: #991b1b; font-size: 13px; line-height: 1.5; box-shadow: 0 2px 4px rgba(239, 68, 68, 0.1); border-top: 1px solid #fee2e2; border-right: 1px solid #fee2e2; border-bottom: 1px solid #fee2e2;}
+  .alert-banner.show { display: flex; animation: slideDown 0.3s ease-out; }
+  .alert-banner strong { color: #7f1d1d; font-size: 14px; }
+  @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* ===== Cards & Compact Table ===== */
+  .card { border: 1px solid var(--line); border-radius: 8px; background: #fff; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04); overflow: visible; display: flex; flex-direction: column; }
+  .card header { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; border-bottom: 1px solid var(--line); background: #f8fafc; border-radius: 8px 8px 0 0; }
+  .card header h2 { margin: 0; font-size: 14px; font-weight: 600; color: var(--ink); }
+  
+  .card-body { display: grid; grid-template-columns: 1fr 340px; align-items: start; }
+  .items-wrapper { padding: 12px; }
+  
+  .item { display: grid; grid-template-columns: 1fr 100px 92px; gap: 10px; align-items: center; border: 1px solid var(--line); border-left: 3px solid var(--line); border-radius: 6px; padding: 6px 10px; margin: 4px 0; transition: all 0.15s ease; background: #fff; }
+  .item:hover { box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+  
+  .item.status-bad { border-left-color: var(--bad); background: #fef2f2; border-top-color: #fee2e2; border-right-color: #fee2e2; border-bottom-color: #fee2e2; }
+  .item.status-warn { border-left-color: var(--warn); background: #fffbeb; border-top-color: #fef3c7; border-right-color: #fef3c7; border-bottom-color: #fef3c7; }
+  .item.status-ok { border-left-color: var(--good); }
+
+  .item .name { display: flex; align-items: flex-start; gap: 8px; }
+  .badge { font-family: ui-monospace, monospace; font-size: 11px; border: 1px solid rgba(0,0,0,0.1); border-radius: 4px; padding: 1px 4px; background: #f1f5f9; color: #475569; }
+  .sev { width: 8px; height: 8px; border-radius: 999px; display: inline-block; margin-top: 5px; flex-shrink: 0; }
+  .sev.bad { background: var(--bad); } .sev.warn { background: var(--warn); } .sev.ok { background: var(--good); }
+  
+  .item-title { font-weight: 500; font-size: 13px; margin-bottom: 2px; color: var(--ink); line-height: 1.2; }
+  .hint { color: #64748b; font-size: 11px; }
+  
+  .qty-input { width: 100%; text-align: center; font-weight: 600; color: var(--accent); background: #fff; padding: 4px; font-size: 13px; border-radius: 4px; }
+  .status-bad .qty-input { border-color: #fca5a5; }
+  .status-warn .qty-input { border-color: #fde047; }
+  
+  .preview-wrapper { padding: 16px; border-left: 1px solid var(--line); background: #f8fafc; position: sticky; top: 0; height: max-content; min-height: 100%; border-radius: 0 0 8px 0; }
+  .copy-area { white-space: pre-wrap; border: 1px solid var(--line); border-radius: 6px; padding: 10px; background: #fff; font: 12px ui-monospace, monospace; color: #334155; line-height: 1.5; max-height: calc(100vh - 250px); overflow-y: auto; }
 
   /* ===== Sticky actions ===== */
-  .sticky{position:sticky;bottom:0;background:#fffffff2;backdrop-filter: blur(6px);border-top:1px solid var(--line);padding:8px;display:flex;gap:8px;justify-content:space-between;align-items:center}
-  .toast{position:fixed;left:50%;bottom:16px;transform:translateX(-50%) translateY(20px);background:#0f172a;color:#fff;padding:10px 14px;border-radius:10px;opacity:0;pointer-events:none;transition:.25s;box-shadow:0 10px 24px rgba(15,23,42,.25);font-size:13px}
-  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  .sticky { position: sticky; bottom: 0; background: rgba(255,255,255,0.95); backdrop-filter: blur(8px); border-top: 1px solid var(--line); padding: 10px 16px; display: flex; gap: 12px; justify-content: space-between; align-items: center; box-shadow: 0 -4px 6px -1px rgba(0, 0, 0, 0.05); margin: 16px -16px -16px -16px; z-index: 20; }
+  
+  .toast { position: fixed; left: 50%; bottom: 60px; transform: translateX(-50%) translateY(20px); background: #1e293b; color: #fff; padding: 10px 16px; border-radius: 6px; opacity: 0; pointer-events: none; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(0,0,0,0.2); font-size: 13px; display: flex; align-items: center; gap: 8px; z-index: 100; }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
   /* ===== Responsive ===== */
-  @media (max-width: 900px){
-    .layout{grid-template-columns:1fr}
-    .sidebar{position:fixed; inset:52px 0 auto 0; height:calc(100vh - 52px); transform:translateX(-100%); transition:.25s; z-index:40}
-    body.show-sidebar .sidebar{transform:none}
+  @media (max-width: 1024px){ .card-body { grid-template-columns: 1fr 280px; } }
+  @media (max-width: 800px){
+    .layout { grid-template-columns: 1fr; }
+    .sidebar { position: fixed; inset: 45px 0 auto 0; height: calc(100vh - 45px); transform: translateX(-100%); transition: 0.3s ease; z-index: 40; }
+    body.show-sidebar .sidebar { transform: none; }
+    .card-body { grid-template-columns: 1fr; }
+    .preview-wrapper { border-left: none; border-top: 1px solid var(--line); position: static; border-radius: 0 0 8px 8px; }
+    .copy-area { max-height: 200px; }
+    .sticky { flex-direction: column; align-items: stretch; }
+    .sticky .bar { justify-content: space-between; }
+    .item { grid-template-columns: 1fr; gap: 6px; }
+    .item .qty-input { width: 100px; }
   }
 </style>
 </head>
@@ -125,21 +146,21 @@
   <!-- ===== Topbar ===== -->
   <header class="topbar" role="banner">
     <div class="wrap">
-      <button class="icon-btn" id="btnMenu" aria-label="Toggle sidebar">☰</button>
-      <div class="brand">สั่งสินค้าเหลือน้อย — Dashboard</div>
+      <button class="icon-btn" id="btnMenu" aria-label="Toggle sidebar">
+        <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+      </button>
+      <div class="brand">📦 สั่งสินค้าเหลือน้อย Dashboard</div>
     </div>
   </header>
 
   <div class="layout">
     <!-- ===== Sidebar ===== -->
-    <aside class="sidebar" role="navigation" aria-label="รายชื่อซัพพลายเออร์">
-      <div class="logo">📦 ซัพพลายเออร์</div>
+    <aside class="sidebar" role="navigation">
+      <div class="logo">รายชื่อซัพพลายเออร์</div>
       <div class="sidebar-search">
         <input type="search" id="supplierSearch" placeholder="ค้นหาซัพพลายเออร์..." />
       </div>
-      <div class="filter">
-        <label><input type="checkbox" id="onlyUrgentSup"/> เฉพาะที่ต้องสั่ง (>0)</label>
-      </div>
+      <label class="filter"><input type="checkbox" id="onlyUrgentSup"/> เฉพาะที่ต้องสั่ง (>0)</label>
       <nav class="nav" id="supList"></nav>
     </aside>
 
@@ -147,62 +168,75 @@
     <main class="content" role="main">
       <div class="container">
 
+        <!-- ===== Alert Banner ===== -->
+        <div id="staleAlert" class="alert-banner">
+          <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="flex-shrink: 0;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+          <div id="staleText"></div>
+        </div>
+
         <!-- Sync/status bar -->
         <div class="panel bar" id="syncBar">
           <div class="status" id="syncText"><span class="dot"></span> พร้อมใช้งาน</div>
           <div class="bar" style="margin-left:auto">
-            <button id="toggleUpload" class="small ghost">อัปโหลดไฟล์...</button>
-            <button id="btnResync" class="small">ซิงก์อีกครั้ง</button>
+            <button id="toggleUpload" class="small ghost">อัปโหลดไฟล์</button>
+            <button id="btnResync" class="small">ซิงก์ข้อมูล</button>
           </div>
         </div>
 
-        <!-- File upload / demo (now hidden by default) -->
-        <div class="panel bar" id="uploadPanel" style="margin-top:12px; display: none;">
+        <!-- File upload -->
+        <div class="panel bar" id="uploadPanel" style="display: none;">
           <strong>อัปโหลด CSV</strong>
           <input id="file" type="file" accept=".csv" />
-          <button id="loadDemo" class="small ghost">CSV ตัวอย่าง</button>
-          <span class="hint">คอลัมน์: Supplier, SKU, Name, In stock, Low stock, Optimal stock</span>
+          <button id="loadDemo" class="small ghost">ดูข้อมูลตัวอย่าง</button>
         </div>
 
         <!-- Controls -->
-        <div class="bar" id="topControls" style="margin-top:10px">
-          <label>ค้นหาในซัพพลายเออร์
-            <input id="itemSearch" type="text" placeholder="ชื่อหรือ SKU" />
+        <div class="bar" id="topControls">
+          <label style="display: flex; flex-direction: column; gap: 4px; font-size: 11px; color: var(--muted);">
+            ค้นหาสินค้า
+            <input id="itemSearch" type="text" placeholder="ชื่อหรือ SKU" style="width: 200px;" />
           </label>
-          <label class="bar"><input type="checkbox" id="onlyAlert" checked/> เฉพาะรายการที่ต้องสั่ง</label>
-          <button id="prevSup" class="small ghost">◀ ก่อนหน้า</button>
-          <button id="nextSup" class="small ghost">ถัดไป ▶</button>
-          <span class="pill" id="supMeta">-</span>
+          <label class="bar" style="margin-top: 15px; font-size: 12px; cursor: pointer;">
+            <input type="checkbox" id="onlyAlert" checked/> ซ่อนสินค้าสต็อกปกติ
+          </label>
+          <div class="bar" style="margin-left: auto; margin-top: 15px;">
+            <span class="pill" id="supMeta">-</span>
+            <button id="prevSup" class="small ghost">◀ ก่อนหน้า</button>
+            <button id="nextSup" class="small ghost">ถัดไป ▶</button>
+          </div>
         </div>
 
         <!-- Main view -->
-        <div id="view" style="margin-top:10px"></div>
+        <div id="view" style="margin-top:12px"></div>
 
         <!-- Sticky actions -->
         <div class="sticky">
           <div class="bar">
-            <button id="copyUrgentAll" class="small flat">คัดลอก “เร่งด่วนทั้งหมด”</button>
+            <button id="copyUrgentAll" class="small flat">คัดลอก "เร่งด่วน" ทุกซัพพลายเออร์</button>
             <span class="pill" id="stats">-</span>
           </div>
           <div class="bar">
-            <button id="btnCopy" class="small">คัดลอก (ซัพพลายเออร์นี้)</button>
+            <button id="btnCopy" class="small">คัดลอก (เฉพาะซัพนี้)</button>
             <button id="btnShare" class="small flat">แชร์</button>
             <button id="btnDL" class="small ghost">ดาวน์โหลด TXT</button>
           </div>
         </div>
 
       </div>
-      <footer>© 2025 — Minimal Blue Dashboard • พื้นที่หน้าจอเว้นวรรคกว้าง อ่านง่าย ปุ่มมุมโค้ง • ฟอนต์ Sans-serif</footer>
     </main>
   </div>
 
-  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <div id="toast" class="toast" role="status">
+    <span id="toastMsg">สำเร็จ</span>
+  </div>
 
 <script>
 // ===== Config =====
 const REMOTE_CSV_URL = 'https://raw.githubusercontent.com/kjakkrid1992-tech/loyverse-export-public/main/data/loyverse-price-latest.csv';
-const LS = { CSV:'SNL_last_csv', SYNC_AT:'SNL_last_sync_at', COUNT:'SNL_last_count' };
+const LS = { CSV:'SNL_last_csv', SYNC_AT:'SNL_last_sync_at', COUNT:'SNL_last_count', FILE_TIME:'SNL_file_time' };
 const PREFS = { ONLY_URG_SUP:'SNL_only_urgent_sup' };
+
+const STALE_HOURS_THRESHOLD = 12;
 
 // ===== Utils =====
 const $ = s => document.querySelector(s);
@@ -210,36 +244,11 @@ const el = (t,c,h)=>{const n=document.createElement(t); if(c) n.className=c; if(
 const num = v => {const n=parseFloat(String(v).replace(/,/g,'').trim()); return isNaN(n)?0:n};
 const notEmpty = v => v!=null && String(v).trim()!=='';
 const supplierName = v => notEmpty(v)? String(v).trim() : 'ไม่ระบุซัพพลายเออร์';
-const fmtThai = ts => new Intl.DateTimeFormat('th-TH',{dateStyle:'medium', timeStyle:'short'}).format(ts);
-function toast(msg){ const t=$('#toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'), 1600); }
+const fmtThai = ts => new Intl.DateTimeFormat('th-TH',{dateStyle:'short', timeStyle:'short'}).format(ts);
+function toast(msg){ $('#toastMsg').textContent=msg; const t=$('#toast'); t.classList.add('show'); setTimeout(()=>t.classList.remove('show'), 2000); }
 
 // Robust CSV parser
-function parseCSV(text){
-  const d = text.indexOf('\t')>-1 ? '\t' : (text.indexOf(';')>-1 ? ';' : ',');
-  const rows = [];
-  let i=0, field='', row=[], inQuotes=false; const s=text, dl=d;
-  while(i<=s.length){
-    const c = s[i];
-    if(inQuotes){
-      if(c==='\"'){
-        if(s[i+1]==='\"'){ field+='\"'; i++; } else { inQuotes=false; }
-      } else { field += c ?? ''; }
-    } else {
-      if(c==='\"') { inQuotes=true; }
-      else if(c===dl) { row.push(field); field=''; }
-      else if(c==='\n' || c==='\r' || i===s.length){
-        row.push(field); field='';
-        if(row.length>1 || (row.length===1 && row[0]!=='')) rows.push(row);
-        row=[];
-        if(c==='\r' && s[i+1]==='\n') i++;
-      } else { field += c ?? ''; }
-    }
-    i++;
-  }
-  return rows;
-}
-// ==== Hotfix: replace parser at runtime to avoid stray newline tokens ====
-const _parseCSV_fixed = function(text){
+const parseCSV = function(text){
   const d = text.indexOf('\t')>-1 ? '\t' : (text.indexOf(';')>-1 ? ';' : ',');
   const rows = [];
   let i=0, field='', row=[], inQuotes=false; const s=text, dl=d;
@@ -263,20 +272,11 @@ const _parseCSV_fixed = function(text){
   }
   return rows;
 };
-try{ parseCSV = _parseCSV_fixed; }catch(e){}
-
 
 function mapColumns(H){
   const headers=H.map(h=>String(h||'').trim());
   const find=(...keys)=>{ for(const k of keys){ const i=headers.findIndex(h=>h.toLowerCase()===k.toLowerCase()); if(i>-1) return i; } for(const k of keys){ const i=headers.findIndex(h=>h.toLowerCase().includes(k.toLowerCase())); if(i>-1) return i; } return -1; };
-  return {
-    supplier:find('Supplier','ซัพพลายเออร์'),
-    sku:find('SKU','รหัส'),
-    name:find('Name','ชื่อ'),
-    instock:find('In stock [JERGUN CRAFT]','In stock','คงเหลือ'),
-    low:find('Low stock [JERGUN CRAFT]','Low stock','จุดเตือน'),
-    optimal:find('Optimal stock [JERGUN CRAFT]','Optimal stock','เป้าหมาย')
-  };
+  return { supplier:find('Supplier','ซัพพลายเออร์'), sku:find('SKU','รหัส'), name:find('Name','ชื่อ'), instock:find('In stock [JERGUN CRAFT]','In stock','คงเหลือ'), low:find('Low stock [JERGUN CRAFT]','Low stock','จุดเตือน'), optimal:find('Optimal stock [JERGUN CRAFT]','Optimal stock','เป้าหมาย') };
 }
 
 function computeItems(rows,col){
@@ -289,7 +289,8 @@ function computeItems(rows,col){
     const low=num(row[col.low]);
     const optimal=num(row[col.optimal]);
     const reorder=Math.max(optimal-instock,0);
-    items.push({supplier,sku,name,instock,low,optimal,reorder,editQty:''});
+    
+    items.push({supplier,sku,name,instock,low,optimal,reorder,editQty:'1 ลัง'});
   } return items;
 }
 
@@ -302,6 +303,40 @@ const state={ items:[], bySup:new Map(), order:[], cur:0 };
 function buildLine(it, forCopy){ const showSKU=true; const qty=(it.editQty && it.editQty.trim()!=='')? it.editQty.trim() : ('x '+it.reorder); const head=[showSKU && it.sku? it.sku:null, it.name].filter(Boolean).join(' '); return `${head} ${qty}${forCopy?'':''}`; }
 function buildSupplierBlock(supplier, rows){ const lines=[String(supplier),'']; for(const it of rows) lines.push(buildLine(it,true)); return lines.join('\n'); }
 
+// ===== Data Freshness Check =====
+// ฟังก์ชันใหม่: ไปถาม GitHub API ตรงๆ ว่าไฟล์นี้อัปเดตล่าสุดกี่โมง
+async function getGithubFileTime() {
+  try {
+    const url = 'https://api.github.com/repos/kjakkrid1992-tech/loyverse-export-public/commits?path=data/loyverse-price-latest.csv&page=1&per_page=1';
+    const res = await fetch(url);
+    if (res.ok) {
+      const data = await res.json();
+      if (data && data.length > 0) {
+        return new Date(data[0].commit.committer.date).getTime();
+      }
+    }
+  } catch (err) {
+    console.warn('ดึงเวลาจาก GitHub ไม่สำเร็จ', err);
+  }
+  return null;
+}
+
+function checkDataFreshness(fileTimestamp) {
+  if(!fileTimestamp) return;
+  const hoursOld = (Date.now() - fileTimestamp) / (1000 * 60 * 60);
+  const alertEl = $('#staleAlert');
+  const alertText = $('#staleText');
+  
+  if(hoursOld > STALE_HOURS_THRESHOLD) {
+    alertEl.classList.add('show');
+    alertText.innerHTML = `<strong>ระวัง! ข้อมูลนี้อาจไม่อัปเดต</strong><br>ระบบดึงข้อมูลจากไฟล์ที่สร้างเมื่อ <b>${Math.floor(hoursOld)} ชั่วโมงที่แล้ว</b> (เวลาที่ไฟล์เข้าสู่ระบบ: ${fmtThai(new Date(fileTimestamp))}) <br>กระบวนการ Export ต้นทางอาจขัดข้อง โปรดตรวจสอบสต็อกก่อนสั่งซื้อ`;
+    return true; 
+  } else {
+    alertEl.classList.remove('show');
+    return false; 
+  }
+}
+
 // ===== Rendering =====
 function refreshOrder(){
   state.bySup = groupBySupplier(state.items);
@@ -309,7 +344,7 @@ function refreshOrder(){
   entries.sort((a,b)=>{
     const ub = urgentCountSupplier(b[1]);
     const ua = urgentCountSupplier(a[1]);
-    if(ub!==ua) return ub-ua; // Highest count first
+    if(ub!==ua) return ub-ua;
     return a[0].localeCompare(b[0],'th');
   });
   state.order = entries.map(e=>e[0]);
@@ -335,9 +370,7 @@ function renderSidebarSuppliers(){
     const isCurrentVisible = filteredOrder.includes(currentSupplierName) && urgentCountSupplier(state.bySup.get(currentSupplierName) || []) > 0;
     if(!isCurrentVisible) {
         const firstVisibleIndex = state.order.findIndex(name => filteredOrder.includes(name) && urgentCountSupplier(state.bySup.get(name) || []) > 0);
-        if (firstVisibleIndex > -1) {
-            state.cur = firstVisibleIndex;
-        }
+        if (firstVisibleIndex > -1) { state.cur = firstVisibleIndex; }
     }
   }
 
@@ -352,8 +385,8 @@ function renderSidebarSuppliers(){
     a.href='#';
     a.dataset.name=name;
     a.className = (idx===state.cur? 'active' : '');
-    a.innerHTML = `<span>${name}</span><span class="count ${lvl}">${cnt}</span>`;
-    a.onclick=(ev)=>{ ev.preventDefault(); state.cur=idx; renderSupplier(); updateSidebarActive(); $('.content').scrollTop = 0; };
+    a.innerHTML = `<span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${name}</span><span class="count ${lvl}">${cnt}</span>`;
+    a.onclick=(ev)=>{ ev.preventDefault(); state.cur=idx; renderSupplier(); updateSidebarActive(); $('.content').scrollTop = 0; document.body.classList.remove('show-sidebar'); };
     list.appendChild(a);
   });
 }
@@ -367,8 +400,7 @@ function updateSidebarActive(){
 
 function renderSupplier(){ 
   if (state.order.length === 0 || state.cur >= state.order.length) {
-      $('#view').innerHTML = '<div class="panel">ไม่พบข้อมูลซัพพลายเออร์</div>';
-      // Clear footer stats as well
+      $('#view').innerHTML = '<div class="panel" style="text-align:center; padding: 30px; color: var(--muted);">ไม่พบข้อมูลซัพพลายเออร์</div>';
       $('#stats').textContent = '-';
       $('#supMeta').textContent = '0/0';
       return;
@@ -382,49 +414,67 @@ function renderSupplier(){
   if(q) rows=rows.filter(it=> it.name.toLowerCase().includes(q) || (it.sku||'').toLowerCase().includes(q));
 
   const view=$('#view'); view.innerHTML='';
+  
   const card=el('div','card');
   const head=el('header','');
   const hleft=el('div','bar',`<h2>${name||'-'}</h2>`);
   const urgent=rowsAll.filter(it=> it.instock<=it.low && it.reorder>0).length;
   const zero=rowsAll.filter(it=> it.instock<=0).length;
-  const meta=el('span','pill',`${rows.length} จาก ${rowsAll.length} รายการ • เร่งด่วน ${urgent}${zero?` • หมด ${zero}`:''}`);
+  const meta=el('span','pill',`เร่งด่วน ${urgent} ${zero?` (หมด ${zero})`:''} • รวม ${rows.length}`);
   hleft.appendChild(meta);
   head.appendChild(hleft);
   card.appendChild(head);
 
-  const list=el('div','items');
+  const cardBody=el('div', 'card-body');
+  const listWrapper=el('div', 'items-wrapper');
+  if(rows.length === 0) { listWrapper.appendChild(el('div', 'hint', '<div style="text-align:center; padding:20px;">ไม่มีรายการสินค้าที่ตรงเงื่อนไข</div>')); }
+  
   rows.forEach(it=>{
-    const row=el('div','item');
+    const statusClass = it.instock <= 0 ? 'status-bad' : (it.instock <= it.low ? 'status-warn' : 'status-ok');
+    const row=el('div', `item ${statusClass}`);
+    
     const nameBox=el('div','name');
     const sev=el('i',`sev ${it.instock<=0?'bad':(it.instock<=it.low?'warn':'ok')}`,'');
-    const sku=el('span','badge', it.sku||'-');
     
     const nameDetails = el('div');
-    const nm=el('span','',it.name);
-    const stockInfo = el('div', 'hint', `คงเหลือ ${it.instock} • จุดเตือน ${it.low} • เป้าหมาย ${it.optimal}`);
+    const skuHtml = it.sku ? `<span class="badge" style="margin-right:4px;">${it.sku}</span>` : '';
+    const nm=el('div','item-title', skuHtml + it.name);
+    const stockInfo = el('div', 'hint', `สต็อก: <strong>${it.instock}</strong> &nbsp;•&nbsp; เตือน: ${it.low}`);
     nameDetails.append(nm, stockInfo);
     
-    nameBox.append(sev, sku, nameDetails);
+    nameBox.append(sev, nameDetails);
 
     const qtyBox=el('div','');
-    const input=document.createElement('input'); input.type='text'; input.placeholder=`x ${it.reorder}`; input.value=it.editQty; input.oninput=()=>{ it.editQty=input.value; refreshPreview(); };
+    const input=document.createElement('input'); 
+    input.type='text'; 
+    input.className='qty-input'; 
+    input.placeholder=`สั่ง 1 ลัง`; 
+    input.value=it.editQty; 
+    input.oninput=()=>{ it.editQty=input.value; refreshPreview(); };
     qtyBox.appendChild(input);
 
-    const actions=el('div',''); const btnLine=el('button','small ghost','คัดลอก'); btnLine.onclick=()=> copyText(buildLine(it,true)); actions.appendChild(btnLine);
+    const actions=el('div',''); 
+    const btnLine=el('button','small ghost','คัดลอก'); 
+    btnLine.onclick=()=> copyText(buildLine(it,true)); 
+    actions.appendChild(btnLine);
 
-    row.append(nameBox, qtyBox, actions); list.appendChild(row);
+    row.append(nameBox, qtyBox, actions); 
+    listWrapper.appendChild(row);
   });
 
-  const preview=el('div','panel', '');
-  const head2=el('div','hint','ข้อความที่จะคัดลอก');
+  const previewWrapper=el('div', 'preview-wrapper');
+  const head2=el('div','hint','ข้อความสรุปเตรียมส่งแชท:');
+  head2.style.marginBottom = '6px';
   const pre=el('div','copy-area');
+  
   function refreshPreview(){ pre.textContent = buildSupplierBlock(name, rows); }
   refreshPreview();
-  preview.append(head2, pre);
+  previewWrapper.append(head2, pre);
 
-  card.appendChild(list); card.appendChild(preview); view.appendChild(card);
+  cardBody.append(listWrapper, previewWrapper);
+  card.appendChild(cardBody); 
+  view.appendChild(card);
 
-  // footer buttons bind to this supplier
   $('#btnCopy').onclick=()=> copyText(buildSupplierBlock(name, rows));
   $('#btnShare').onclick=()=> shareText('ออเดอร์: '+name, buildSupplierBlock(name, rows));
   $('#btnDL').onclick=()=> downloadSupplier(name, buildSupplierBlock(name, rows));
@@ -434,22 +484,76 @@ function renderSupplier(){
   updateStats();
 }
 
-function updateStats(){ const total=state.items.length; const sups=state.order.length; const urgentAll = state.items.filter(it=> it.instock<=it.low && it.reorder>0).length; $('#stats').textContent = `${total} รายการ • ${sups} ซัพพลายเออร์ • เร่งด่วน ${urgentAll}`; }
+function updateStats(){ const total=state.items.length; const urgentAll = state.items.filter(it=> it.instock<=it.low && it.reorder>0).length; $('#stats').textContent = `รวม ${total} • เร่งด่วน ${urgentAll}`; }
 
 // ===== Copy/Share helpers =====
 async function copyText(text){ try{ await navigator.clipboard.writeText(text); toast('คัดลอกแล้ว ✓'); }catch(e){ const ta=document.createElement('textarea'); ta.value=text; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove(); toast('คัดลอกแล้ว ✓'); }}
-async function shareText(title, text){ if(navigator.share){ try{ await navigator.share({title, text}); }catch(e){ if(e?.name!=='AbortError') toast('แชร์ไม่สำเร็จ'); } } else { await copyText(text); toast('คัดลอกแทนให้แล้ว'); } }
+async function shareText(title, text){ if(navigator.share){ try{ await navigator.share({title, text}); }catch(e){ if(e?.name!=='AbortError') toast('แชร์ไม่สำเร็จ'); } } else { await copyText(text); toast('คัดลอกแทนแล้ว'); } }
 function downloadSupplier(supplier, text){ const safe=String(supplier||'').replace(/[\/*?:"<>|]/g,'_'); const blob=new Blob([text],{type:'text/plain;charset=utf-8'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`ออเดอร์_${safe}.txt`; a.click(); URL.revokeObjectURL(a.href); }
 
 // ===== Sync / Cache =====
-function setSyncUI(stateStr, data={}){ const t=$('#syncText'); if(stateStr==='loading'){ t.innerHTML=`<span class="spinner"></span> <strong>กำลังซิงก์...</strong>`; } else if(stateStr==='ok'){ t.innerHTML=`<span class="dot ok"></span> ซิงก์แล้ว ${data.count||0} รายการ • ${fmtThai(new Date(data.at))}`; } else if(stateStr==='cached'){ t.innerHTML=`<span class="dot warn"></span> ใช้ข้อมูลล่าสุดจากเครื่อง • ${fmtThai(new Date(data.at))} • ${data.count||0} รายการ`; } else if(stateStr==='error'){ t.innerHTML=`<span class="dot bad"></span> ซิงก์ไม่สำเร็จ — ใช้ข้อมูลเดิมในเครื่อง`; } else { t.innerHTML=`<span class="dot"></span> พร้อมใช้งาน`; } }
+function setSyncUI(stateStr, data={}){ 
+  const t=$('#syncText'); 
+  const isStale = data.fileTime ? checkDataFreshness(data.fileTime) : false;
 
-function loadFromCache(){ const csv=localStorage.getItem(LS.CSV); const at=Number(localStorage.getItem(LS.SYNC_AT)||0); if(csv){ try{ const rows=parseCSV(csv); const col=mapColumns(rows[0]); state.items=computeItems(rows,col); refreshOrder(); renderSidebarSuppliers(); renderTopControls(); renderSupplier(); if(at) setSyncUI('cached',{at,count:state.items.length}); }catch(e){ console.error('cache parse',e);} }}
+  if(stateStr==='loading'){ 
+    t.innerHTML=`<span class="spinner"></span> <strong>กำลังซิงก์...</strong>`; 
+  } else if(stateStr==='ok'){ 
+    // ใช้เวลาไฟล์จริง (fileTime) มาโชว์
+    t.innerHTML=`<span class="dot ${isStale ? 'bad' : 'ok'}"></span> ไฟล์ถูกสร้างเมื่อ: ${fmtThai(new Date(data.fileTime))} ${isStale ? '(ข้อมูลเก่า)' : ''}`; 
+  } else if(stateStr==='cached'){ 
+    t.innerHTML=`<span class="dot ${isStale ? 'bad' : 'warn'}"></span> ออฟไลน์ (${fmtThai(new Date(data.fileTime))})`; 
+  } else if(stateStr==='error'){ 
+    t.innerHTML=`<span class="dot bad"></span> ซิงก์ล้มเหลว`; 
+  } else { 
+    t.innerHTML=`<span class="dot"></span> พร้อมใช้งาน`; 
+  } 
+}
 
-async function syncRemote({manual=false}={}){ const ctl=new AbortController(); const timer=setTimeout(()=>ctl.abort(),15000); setSyncUI('loading'); try{ const res=await fetch(REMOTE_CSV_URL,{cache:'no-store', signal:ctl.signal}); if(!res.ok) throw new Error('HTTP '+res.status); const text=await res.text(); const rows=parseCSV(text); if(!rows.length) throw new Error('EMPTY'); const col=mapColumns(rows[0]); const miss=Object.values(col).some(v=>v<0); if(miss) throw new Error('MISSING_COLS'); state.items=computeItems(rows,col); // save success only
-    localStorage.setItem(LS.CSV,text); const at=Date.now(); localStorage.setItem(LS.SYNC_AT, String(at)); localStorage.setItem(LS.COUNT, String(state.items.length));
-    refreshOrder(); renderSidebarSuppliers(); renderTopControls(); renderSupplier(); setSyncUI('ok',{at,count:state.items.length}); if(manual) toast('ซิงก์แล้ว ✓');
-  }catch(err){ console.error('sync',err); setSyncUI('error'); toast('ซิงก์ไม่สำเร็จ — ใช้ข้อมูลเดิม'); if(!state.items.length) loadFromCache(); }
+function loadFromCache(){ 
+  const csv=localStorage.getItem(LS.CSV); 
+  const at=Number(localStorage.getItem(LS.SYNC_AT)||0); 
+  const fileTime=Number(localStorage.getItem(LS.FILE_TIME)||at);
+  if(csv){ 
+    try{ 
+      const rows=parseCSV(csv); const col=mapColumns(rows[0]); state.items=computeItems(rows,col); 
+      refreshOrder(); renderSidebarSuppliers(); renderTopControls(); renderSupplier(); 
+      if(at) setSyncUI('cached',{at, count:state.items.length, fileTime}); 
+    }catch(e){ console.error('cache parse',e);} 
+  }
+}
+
+async function syncRemote({manual=false}={}){ 
+  const ctl=new AbortController(); const timer=setTimeout(()=>ctl.abort(),15000); setSyncUI('loading'); 
+  try{ 
+    const res=await fetch(REMOTE_CSV_URL,{cache:'no-store', signal:ctl.signal}); 
+    if(!res.ok) throw new Error('HTTP '+res.status); 
+    
+    // พยายามดึงเวลาอัปเดตไฟล์จาก GitHub API
+    let fileTime = await getGithubFileTime();
+    if (!fileTime) {
+      // ถ้า API ขัดข้อง ให้สลับไปใช้วิธีดึงจาก Header แทน
+      const lastModHeader = res.headers.get('Last-Modified');
+      fileTime = lastModHeader ? new Date(lastModHeader).getTime() : Date.now();
+    }
+
+    const text=await res.text(); const rows=parseCSV(text); if(!rows.length) throw new Error('EMPTY'); 
+    const col=mapColumns(rows[0]); const miss=Object.values(col).some(v=>v<0); if(miss) throw new Error('MISSING_COLS'); 
+    state.items=computeItems(rows,col); 
+    
+    localStorage.setItem(LS.CSV,text); 
+    const at=Date.now(); 
+    localStorage.setItem(LS.SYNC_AT, String(at)); 
+    localStorage.setItem(LS.FILE_TIME, String(fileTime));
+    localStorage.setItem(LS.COUNT, String(state.items.length));
+    
+    refreshOrder(); renderSidebarSuppliers(); renderTopControls(); renderSupplier(); 
+    setSyncUI('ok',{at, count:state.items.length, fileTime}); 
+    if(manual) toast('อัปเดตข้อมูลสำเร็จ ✓');
+  }catch(err){ 
+    console.error('sync',err); setSyncUI('error'); if(manual) toast('เชื่อมต่อเซิร์ฟเวอร์ไม่ได้'); 
+    if(state.items.length === 0) loadFromCache(); 
+  }
   finally{ clearTimeout(timer); }
 }
 
@@ -457,26 +561,29 @@ async function syncRemote({manual=false}={}){ const ctl=new AbortController(); c
 $('#itemSearch').addEventListener('input', ()=> renderSupplier());
 $('#onlyAlert').addEventListener('change', ()=> renderSupplier());
 $('#btnResync').addEventListener('click', ()=> syncRemote({manual:true}));
-$('#supplierSearch').addEventListener('input', () => {
-    renderSidebarSuppliers();
-    renderSupplier();
-});
-$('#toggleUpload').addEventListener('click', () => {
-    const panel = $('#uploadPanel');
-    panel.style.display = panel.style.display === 'none' ? 'flex' : 'none';
-});
+$('#supplierSearch').addEventListener('input', () => { renderSidebarSuppliers(); renderSupplier(); });
+$('#toggleUpload').addEventListener('click', () => { const panel = $('#uploadPanel'); panel.style.display = panel.style.display === 'none' ? 'flex' : 'none'; });
 $('#copyUrgentAll').addEventListener('click', ()=>{
   const by = groupBySupplier(state.items.filter(it=> it.instock<=it.low && it.reorder>0));
   const blocks = [];
   for(const [sup, rows] of by.entries()) blocks.push(buildSupplierBlock(sup, rows));
-  copyText(blocks.join('\n\n'));
+  if(blocks.length > 0) { copyText(blocks.join('\n\n')); } else { toast('ไม่มีสินค้าเร่งด่วน'); }
 });
 
-$('#file').addEventListener('change', async ev=>{ const f=ev.target.files[0]; if(!f) return; const text=await f.text(); const rows=parseCSV(text); if(!rows.length) return alert('Cannot read CSV'); const col=mapColumns(rows[0]); const miss=Object.values(col).some(v=>v<0); if(miss) return alert('Missing columns'); state.items=computeItems(rows,col); localStorage.setItem(LS.CSV,text); const at=Date.now(); localStorage.setItem(LS.SYNC_AT, String(at)); localStorage.setItem(LS.COUNT, String(state.items.length)); refreshOrder(); renderSidebarSuppliers(); renderTopControls(); renderSupplier(); setSyncUI('cached',{at, count:state.items.length}); toast('Updated from file ✓'); });
+$('#file').addEventListener('change', async ev=>{ 
+  const f=ev.target.files[0]; if(!f) return; 
+  const text=await f.text(); const rows=parseCSV(text); if(!rows.length) return alert('อ่านไฟล์ไม่ได้'); 
+  const col=mapColumns(rows[0]); const miss=Object.values(col).some(v=>v<0); if(miss) return alert('คอลัมน์ไม่ถูกต้อง'); 
+  state.items=computeItems(rows,col); 
+  localStorage.setItem(LS.CSV,text); 
+  const fileTime=Date.now(); // สำหรับการอัปโหลดไฟล์ตรงๆ เราจะใช้เวลาปัจจุบันเลย
+  localStorage.setItem(LS.SYNC_AT, String(fileTime)); localStorage.setItem(LS.FILE_TIME, String(fileTime)); localStorage.setItem(LS.COUNT, String(state.items.length)); 
+  refreshOrder(); renderSidebarSuppliers(); renderTopControls(); renderSupplier(); 
+  setSyncUI('cached',{at:fileTime, fileTime, count:state.items.length}); toast('อัปโหลดไฟล์ใหม่แล้ว ✓'); $('#uploadPanel').style.display='none'; 
+});
 
-$('#loadDemo').addEventListener('click', ()=>{ const headers=['Supplier','SKU','Name','In stock [JERGUN CRAFT]','Low stock [JERGUN CRAFT]','Optimal stock [JERGUN CRAFT]']; const rows=[ ['บริษัท ดริ้งก์ไว๊ซ์ จำกัด','10864','set ซอดแจ้ง','4','6','6'], ['บริษัท ดริ้งก์ไว๊ซ์ จำกัด','10757','จ๊วด โคล่า 360 ml','0','6','12'], ['บริษัท ระยองพรีเมียมคราฟต์ สปิริตส์ จำกัด','10404','RAYONG CRAFT Spirits(น้ำตาลดอกมะพร้าว.สับปะรด.น้ำตาลโตนด)','3','5','5'], ['ไม่ระบุ','','ตัวอย่าง ไม่มี SKU','0','1','4'] ]; const csv=[headers.join(','), ...rows.map(r=> r.map(v=>{const s=String(v); return /[",\n]/.test(s)? '"'+s.replace(/"/g,'""')+'"' : s;}).join(','))].join('\n'); const blob=new Blob([csv],{type:'text/csv;charset=utf-8'}); const f=new File([blob],'demo.csv',{type:'text/csv'}); const dt=new DataTransfer(); dt.items.add(f); const input=$('#file'); input.files=dt.files; input.dispatchEvent(new Event('change')); });
+$('#loadDemo').addEventListener('click', ()=>{ const headers=['Supplier','SKU','Name','In stock [JERGUN CRAFT]','Low stock [JERGUN CRAFT]','Optimal stock [JERGUN CRAFT]']; const rows=[ ['บริษัท ตัวอย่าง','101','สินค้าทดสอบ','1','5','10'] ]; const csv=[headers.join(','), ...rows.map(r=> r.map(v=>{const s=String(v); return /[",\n]/.test(s)? '"'+s.replace(/"/g,'""')+'"' : s;}).join(','))].join('\n'); const blob=new Blob([csv],{type:'text/csv;charset=utf-8'}); const f=new File([blob],'demo.csv',{type:'text/csv'}); const dt=new DataTransfer(); dt.items.add(f); const input=$('#file'); input.files=dt.files; input.dispatchEvent(new Event('change')); });
 
-// Topbar controls
 $('#btnMenu').addEventListener('click', ()=> document.body.classList.toggle('show-sidebar'));
 
 // ===== Boot =====
@@ -488,7 +595,7 @@ const cbUrg = document.getElementById('onlyUrgentSup');if(cbUrg){
   cbUrg.addEventListener('change', ()=>{
     localStorage.setItem(PREFS.ONLY_URG_SUP, cbUrg.checked?'1':'0');
     renderSidebarSuppliers();
-    renderSupplier(); // Re-render main content to reflect potential change in `state.cur`
+    renderSupplier(); 
   });
 }
 </script>
